@@ -1,0 +1,6 @@
+{
+  "type": "Perceptron",
+  "inputs": 2,
+  "function": "heaviside",
+  "learningRate":  "0.01"
+}
