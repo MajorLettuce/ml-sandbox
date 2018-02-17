@@ -80,6 +80,11 @@ namespace ML.Model
         }
 
         /// <summary>
+        /// Initialize current model.
+        /// </summary>
+        abstract public void Initialize();
+
+        /// <summary>
         /// Save currently loaded model.
         /// </summary>
         abstract public void Save();
@@ -158,7 +163,7 @@ namespace ML.Model
         /// <returns></returns>
         virtual public string GetInfo()
         {
-            return String.Empty;
+            throw new NotImplementedException();
         }
 
         /// <summary>

@@ -29,19 +29,6 @@ namespace ML.Model
             stateFile = "state.csv";
 
             sampleFile = "samples.csv";
-
-            try
-            {
-                var state = DelimitedReader.Read<double>(Path(stateFile)).Row(0);
-                var bias = state[0];
-                var weights = state.SubVector(1, state.Count - 1);
-                perceptron = new Neuron(config.Inputs, weights, bias, Config.Function.ToString());
-            }
-            catch
-            {
-                perceptron = Generate();
-            }
-
         }
 
         /// <summary>
@@ -51,6 +38,24 @@ namespace ML.Model
         protected Neuron Generate()
         {
             return Neuron.Generate(Config.Inputs, Config.Function.ToString());
+        }
+
+        /// <summary>
+        /// Initialize current model.
+        /// </summary>
+        public override void Initialize()
+        {
+            try
+            {
+                var state = DelimitedReader.Read<double>(Path(stateFile)).Row(0);
+                var bias = state[0];
+                var weights = state.SubVector(1, state.Count - 1);
+                perceptron = new Neuron(Config.Inputs, weights, bias, Config.Function.ToString());
+            }
+            catch
+            {
+                perceptron = Neuron.Generate(Config.Inputs, Config.Function.ToString());
+            }
         }
 
         /// <summary>
@@ -109,7 +114,7 @@ namespace ML.Model
         /// <returns></returns>
         override public Vector<double> Process(Vector<double> inputs)
         {
-            return Vector<double>.Build.DenseOfArray(new double[] { perceptron.Process(inputs) });
+            return Vector<double>.Build.DenseOfArray(new double[] { perceptron.Forward(inputs) });
         }
 
         /// <summary>
@@ -117,7 +122,7 @@ namespace ML.Model
         /// </summary>
         override public double Teach(Vector<double> inputs, Vector<double> outputs)
         {
-            if (perceptron.Inputs != inputs.Count)
+            if (perceptron.InputCount != inputs.Count)
             {
                 throw new Exception("Incorrect number of inputs.");
             }
@@ -148,8 +153,8 @@ namespace ML.Model
 
             foreach (var index in permutation)
             {
-                var inputs = samples.Row(index).SubVector(0, perceptron.Inputs);
-                var outputs = samples.Row(index).SubVector(perceptron.Inputs, 1);
+                var inputs = samples.Row(index).SubVector(0, perceptron.InputCount);
+                var outputs = samples.Row(index).SubVector(perceptron.InputCount, 1);
                 error += Teach(inputs, outputs);
             }
 
