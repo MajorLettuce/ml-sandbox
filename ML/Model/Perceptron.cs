@@ -120,7 +120,7 @@ namespace ML.Model
         /// <summary>
         /// Run teaching interation.
         /// </summary>
-        override public double Teach(Vector<double> inputs, Vector<double> outputs)
+        public double Teach(Vector<double> inputs, Vector<double> outputs)
         {
             if (perceptron.InputCount != inputs.Count)
             {

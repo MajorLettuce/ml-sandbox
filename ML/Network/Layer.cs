@@ -111,5 +111,35 @@ namespace ML.Network
                 return Neurons[index].Forward(inputs);
             });
         }
+
+        /// <summary>
+        /// Backpropagate output gradient to the layer inputs.
+        /// </summary>
+        /// <param name="gradient">
+        /// Output (previous level) gradient vector.
+        /// </param>
+        /// <returns></returns>
+        public Vector<double> Backward(Vector<double> gradient)
+        {
+            if (Neurons.Count != gradient.Count)
+            {
+                throw new Exception("Incorrect number of outputs.");
+            }
+
+            // Layer input weights gradient.
+            var vector = Vector<double>.Build.Dense(InputCount, 0);
+
+            // Each output contributes to each input weight gradient.
+            for (int i = 0; i < Size; i++)
+            {
+                var neuron = Neurons[i];
+                vector.Add(neuron.Backward(gradient[i]));
+            }
+
+            Console.WriteLine("vector: {0}", vector);
+
+            // Return gradient vector.
+            return vector;
+        }
     }
 }

@@ -167,9 +167,51 @@ namespace ML.Model
         /// Run teaching interation.
         /// </summary>
         /// <returns></returns>
-        public override double Teach(Vector<double> inputs, Vector<double> outputs)
+        public List<Vector<double>> Teach(Vector<double> targets, Vector<double> outputs)
         {
-            throw new NotImplementedException();
+            // Calculate total squared error vector for each output.
+            double error = outputs.Subtract(Process(targets)).PointwisePower(2).Divide(2).Sum();
+            // Calculate backpropagation gradients for each weight.
+            // This will allow to accumulate them and apply once at the end of the epoch.
+            // Each layer has arbitrary amount of weights,
+            // so it's not possible to fit them in a matrix, the list is used instead.
+            var gradients = new List<Vector<double>>();
+
+            Vector<double> gradient = null;
+
+            for (int i = layers.Count - 1; i >= 0; i--)
+            {
+                var layer = layers[i];
+
+                // If gradient vector doesn't exist yet, that means this is the last layer.
+                if (gradient == null)
+                {
+                    gradient = layer.Backward(Vector<double>.Build.Dense(layer.Size, 1));
+                }
+                else
+                {
+                    gradient = layer.Backward(gradient);
+                }
+
+                Console.WriteLine("layer[{0}] gradient: {1}", i, gradient);
+                /*
+                var deltas = outputs.Subtract(targets).PointwiseMultiply(Vector<double>.Build.Dense(layer.Size, index =>
+                {
+                    return layer.Function.Derivative(outputs.At(index));
+                }));
+
+                Console.WriteLine("deltas: {0}", deltas);
+                */
+                /*
+                var vector = Vector<double>.Build.Dense(layer.Size, index =>
+                {
+                    return 0;
+                });
+                gradients.Add(vector);
+                */
+            }
+
+            return gradients;
         }
 
         /// <summary>
@@ -178,7 +220,16 @@ namespace ML.Model
         /// <returns></returns>
         public override double RunEpoch()
         {
-            throw new NotImplementedException();
+            foreach (var vector in
+                Teach(
+                    Vector<double>.Build.Dense(new double[] { 0.05, 0.1 }),
+                    Vector<double>.Build.Dense(new double[] { 0.01, 0.99 })
+                )
+            )
+            {
+                Console.WriteLine(vector);
+            }
+            return 0;
         }
     }
 }

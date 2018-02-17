@@ -174,12 +174,6 @@ namespace ML.Model
         abstract public Vector<double> Process(Vector<double> inputs);
 
         /// <summary>
-        /// Run teaching interation.
-        /// </summary>
-        /// <returns></returns>
-        abstract public double Teach(Vector<double> inputs, Vector<double> outputs);
-
-        /// <summary>
         /// Run teaching epoch.
         /// </summary>
         /// <returns></returns>

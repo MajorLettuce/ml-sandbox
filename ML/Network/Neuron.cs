@@ -103,15 +103,19 @@ namespace ML.Network
         }
 
         /// <summary>
-        /// Backpropagate output gradient to the inputs.
+        /// Backpropagate output gradient to the neuron inputs.
         /// </summary>
-        /// <param name="gradient">Output gradient scalar (single value/neuron connection).</param>
+        /// <param name="gradient">
+        /// Output (previous level) gradient scalar (single value/neuron connection).
+        /// </param>
         /// <returns></returns>
         public Vector<double> Backward(double gradient)
         {
+            Console.WriteLine("gradient: {0}", gradient);
             // Return gradient vector.
             return Vector<double>.Build.Dense(InputCount, (index) =>
             {
+                Console.WriteLine("derivative: {0}", Function.Derivative(CachedInputs.At(index)));
                 return Function.Derivative(CachedInputs.At(index)) * gradient;
             });
         }
