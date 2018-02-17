@@ -94,8 +94,10 @@ namespace ML.Network
 
             for (int i = 0; i < inputs.Count; i++)
             {
-                result += inputs[i] * Weights[i] + Bias;
+                result += inputs[i] * Weights[i];
             }
+
+            result += Bias;
 
             return Function.Calculate(result);
         }
