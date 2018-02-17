@@ -73,15 +73,7 @@ namespace ML
                     var previous = model.GetInfo();
 
                     var error = model.RunEpoch();
-                    /*
-                    Console.WriteLine("Previous model:");
-                    Console.WriteLine("===========");
-                    Console.WriteLine(previous);
 
-                    Console.WriteLine("\nNew model:");
-                    Console.WriteLine("===========");
-                    Console.WriteLine(model.GetInfo());
-                    */
                     Console.Write("error {0} ", error);
 
                     series.Points.Add(new DataPoint(epoch, error));
