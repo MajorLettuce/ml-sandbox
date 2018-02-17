@@ -115,7 +115,7 @@ namespace ML.Model
         /// <summary>
         /// Run teaching interation.
         /// </summary>
-        override public void Teach(Vector<double> inputs, Vector<double> outputs)
+        override public double Teach(Vector<double> inputs, Vector<double> outputs)
         {
             if (perceptron.Inputs != inputs.Count)
             {
@@ -132,22 +132,28 @@ namespace ML.Model
             }
             // Delta sign is reversed because e = (y - t) instead of (t - y)
             perceptron.Bias -= Config.LearningRate * error;
+
+            return error;
         }
 
         /// <summary>
         /// Run teaching epoch using online teaching method.
         /// Weight updates are done on for each sample individually.
         /// </summary>
-        override public void RunEpoch()
+        override public double RunEpoch()
         {
+            double error = 0;
             var samples = DelimitedReader.Read<double>(Path(sampleFile));
             var permutation = Combinatorics.GeneratePermutation(samples.RowCount);
+
             foreach (var index in permutation)
             {
                 var inputs = samples.Row(index).SubVector(0, perceptron.Inputs);
                 var outputs = samples.Row(index).SubVector(perceptron.Inputs, 1);
-                Teach(inputs, outputs);
+                error += Teach(inputs, outputs);
             }
+
+            return error;
         }
     }
 }

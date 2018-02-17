@@ -7,6 +7,8 @@ using CommandLine;
 using ML.Model;
 using ML.Network.ActivationFunction;
 using MathNet.Numerics.LinearAlgebra;
+using OxyPlot;
+using OxyPlot.WindowsForms;
 
 namespace ML
 {
@@ -39,25 +41,39 @@ namespace ML
 #endif
                 });
 
+            Console.Clear();
+
             if (teaching)
             {
                 Console.WriteLine("Launching model in teaching mode");
 
-                uint epoch = 1;
+                var plotModel = new PlotModel { Title = String.Format("{0} model \"{1}\" learning graph", model.Config.Type, model.Name) };
+                var series = new OxyPlot.Series.LineSeries();
+                plotModel.Series.Add(series);
+                plotModel.Axes.Add(new OxyPlot.Axes.LinearAxis
+                {
+                    Minimum = 1,
+                    Position = OxyPlot.Axes.AxisPosition.Bottom,
+                    Title = "Epochs",
+                });
+                plotModel.Axes.Add(new OxyPlot.Axes.LinearAxis
+                {
+                    Position = OxyPlot.Axes.AxisPosition.Left,
+                    Title = "Error",
+                });
 
-                while (true)
+                var epoch = 0;
+
+                var epochRunStep = epochRuns;
+
+                while (epochRuns == 0 || epoch < epochRuns)
                 {
                     Console.Clear();
                     Console.WriteLine("Running learning epoch number {0}...\n", epoch++);
 
                     var previous = model.GetInfo();
 
-                    for (int run = 0; run < epochRuns; run++)
-                    {
-                        model.RunEpoch();
-                    }
-
-                    Console.WriteLine("Done.\n");
+                    var error = model.RunEpoch();
 
                     Console.WriteLine("Previous model:");
                     Console.WriteLine("===========");
@@ -67,23 +83,35 @@ namespace ML
                     Console.WriteLine("===========");
                     Console.WriteLine(model.GetInfo());
 
-                    DisplayActions(model);
+                    Console.WriteLine("\n>>> Error: {0}", error);
+
+                    series.Points.Add(new DataPoint(epoch, error));
+
+                    if (model.Config.Threshold != null && Math.Abs(error) <= model.Config.Threshold)
+                    {
+                        Console.WriteLine("\nError threshold ({0}) reached. Finished learning.", model.Config.Threshold);
+                        Environment.Exit(1);
+                    }
+
+                    if (epochRuns == 0 || epoch >= epochRuns)
+                    {
+                        epochRuns += epochRunStep;
+                        var pngExporter = new PngExporter();
+                        pngExporter.ExportToFile(plotModel, model.Path("learning-graph.png"));
+
+                        DisplayActions(model);
+                    }
                 }
             }
             else
             {
                 Console.WriteLine("Running execution loop\n");
 
-                bool debug = true;
-
                 while (true)
                 {
-                    if (debug)
-                    {
-                        Console.WriteLine("Model info:");
-                        Console.WriteLine("===========");
-                        Console.WriteLine(model.GetInfo());
-                    }
+                    Console.WriteLine("Model info:");
+                    Console.WriteLine("===========");
+                    Console.WriteLine(model.GetInfo());
 
                     DisplayActions(model);
 

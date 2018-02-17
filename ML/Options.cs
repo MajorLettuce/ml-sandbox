@@ -10,7 +10,7 @@ namespace ML
         [Option('m', "model", Default = "default", HelpText = "Name of the model to load.")]
         public string Model { get; set; }
 
-        [Option("runs", Default = 1, HelpText = "Number of runs to run for each epoch.")]
+        [Option("runs", Default = 0, HelpText = "Number of epochs to run. (0 - unlimited)")]
         public int EpochRuns { get; set; }
     }
 }

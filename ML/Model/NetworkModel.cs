@@ -16,7 +16,7 @@ namespace ML.Model
         /// <summary>
         /// Model name.
         /// </summary>
-        protected string model;
+        public string Name { get; protected set; }
 
         /// <summary>
         /// Name of the model configuration file.
@@ -30,7 +30,7 @@ namespace ML.Model
         /// <param name="config"></param>
         public NetworkModel(string model, Config config)
         {
-            this.model = model;
+            Name = model;
             Config = config;
         }
 
@@ -43,45 +43,38 @@ namespace ML.Model
         {
             var config = ReadConfig(model);
 
-            if (config.Type == null)
+            var type = Type.GetType(String.Format("ML.Model.{0}", config.Type));
+            if (type == null)
             {
-                throw new Exception("Undefined type of model '" + model + "'.");
+                throw new Exception("Model type '" + config.Type + "' for model '" + model + "' doesn't exist.");
             }
             else
             {
-                var type = Type.GetType(String.Format("ML.Model.{0}", config.Type));
-                if (type == null)
+                var configType = Type.GetType(
+                    String.Format("ML.Model.{0}Config", config.Type.ToString().Split('.').Last())
+                );
+
+                object typeConfig = config;
+
+                if (configType != null)
                 {
-                    throw new Exception("Model type '" + config.Type + "' for model '" + model + "' doesn't exist.");
-                }
-                else
-                {
-                    var configType = Type.GetType(
-                        String.Format("ML.Model.{0}Config", config.Type.Split('.').Last())
-                    );
-
-                    object typeConfig = config;
-
-                    if (configType != null)
-                    {
-                        try
-                        {
-                            typeConfig = ReadConfig(model, configType);
-                        }
-                        catch (Exception e)
-                        {
-                            throw e.InnerException;
-                        }
-                    }
-
                     try
                     {
-                        return Activator.CreateInstance(type, model, typeConfig) as NetworkModel;
+                        typeConfig = ReadConfig(model, configType);
                     }
                     catch (Exception e)
                     {
-                        throw new Exception("Unable to create model '" + model + "'.", e);
+                        throw e.InnerException;
                     }
+                }
+
+                try
+                {
+                    return Activator.CreateInstance(type, model, typeConfig) as NetworkModel;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("Unable to create model '" + model + "'.", e);
                 }
             }
         }
@@ -114,7 +107,7 @@ namespace ML.Model
         /// <returns></returns>
         public string Path(string path)
         {
-            return String.Format("models/{0}/{1}", model, path);
+            return String.Format("models/{0}/{1}", Name, path);
         }
 
         /// <summary>
@@ -135,7 +128,7 @@ namespace ML.Model
         /// <returns></returns>
         public string ReadResource(string path)
         {
-            return File.ReadAllText(Path(model, path));
+            return File.ReadAllText(Path(Name, path));
         }
 
         /// <summary>
@@ -178,11 +171,13 @@ namespace ML.Model
         /// <summary>
         /// Run teaching interation.
         /// </summary>
-        abstract public void Teach(Vector<double> inputs, Vector<double> outputs);
+        /// <returns></returns>
+        abstract public double Teach(Vector<double> inputs, Vector<double> outputs);
 
         /// <summary>
         /// Run teaching epoch.
         /// </summary>
-        abstract public void RunEpoch();
+        /// <returns></returns>
+        abstract public double RunEpoch();
     }
 }
