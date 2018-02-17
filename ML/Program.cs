@@ -32,6 +32,8 @@ namespace ML
 #endif
                     model = NetworkModel.Load(opts.Model);
 #if !DEBUG
+
+                        Console.Clear();
                     }
                     catch (Exception e)
                     {
@@ -40,8 +42,6 @@ namespace ML
                     }
 #endif
                 });
-
-            Console.Clear();
 
             if (teaching)
             {
@@ -68,13 +68,12 @@ namespace ML
 
                 while (epochRuns == 0 || epoch < epochRuns)
                 {
-                    Console.Clear();
-                    Console.WriteLine("Running learning epoch number {0}...\n", epoch++);
+                    Console.Write("Epoch {0}: ", ++epoch);
 
                     var previous = model.GetInfo();
 
                     var error = model.RunEpoch();
-
+                    /*
                     Console.WriteLine("Previous model:");
                     Console.WriteLine("===========");
                     Console.WriteLine(previous);
@@ -82,8 +81,8 @@ namespace ML
                     Console.WriteLine("\nNew model:");
                     Console.WriteLine("===========");
                     Console.WriteLine(model.GetInfo());
-
-                    Console.WriteLine("\n>>> Error: {0}", error);
+                    */
+                    Console.Write("error {0} ", error);
 
                     series.Points.Add(new DataPoint(epoch, error));
 
@@ -150,6 +149,7 @@ namespace ML
                     }
                 case ConsoleKey.S:
                     {
+                        Console.WriteLine("Saving model...");
                         model.Save();
                         Console.WriteLine("Model has been saved.");
                         Environment.Exit(0);
@@ -157,6 +157,7 @@ namespace ML
                     }
                 case ConsoleKey.D:
                     {
+                        Console.WriteLine("Deleting model...");
                         model.Delete();
                         Console.WriteLine("Model has been deleted.");
                         Environment.Exit(0);
