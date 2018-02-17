@@ -5,14 +5,15 @@ namespace ML.Model
 {
     class PerceptronConfig : Config
     {
-        public enum ActivationFunctions
+        public enum ActivationFunction
         {
             Heaviside,
-            Hardlim
+            Hardlim,
+            Linear,
         }
 
         [JsonProperty]
         [JsonConverter(typeof(StringEnumConverter))]
-        public ActivationFunctions Function { get; set; }
+        public ActivationFunction Function { get; set; }
     }
 }
