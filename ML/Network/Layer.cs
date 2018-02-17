@@ -10,50 +10,88 @@ namespace ML.Network
         /// <summary>
         /// List of neurons in the layer.
         /// </summary>
-        List<Neuron> neurons;
+        public List<Neuron> Neurons { protected set; get; }
+
+        /// <summary>
+        /// Type of the layer.
+        /// </summary>
+        public string Type
+        {
+            get
+            {
+                return "fc";
+            }
+        }
 
         /// <summary>
         /// Number of neurons in layer.
         /// </summary>
-        public int Size { protected set; get; }
+        public int Size
+        {
+            get
+            {
+                return Neurons.Count;
+            }
+        }
 
         /// <summary>
         /// Number of neuron inputs.
         /// </summary>
-        public int Inputs { protected set; get; }
+        public int InputCount
+        {
+            get
+            {
+                return Neurons[0].InputCount;
+            }
+        }
 
         /// <summary>
-        /// Vector of input weights.
+        /// Layer function.
         /// </summary>
-        public Vector<double> Weights { protected set; get; }
-
-        /// <summary>
-        /// Neuron result activation function.
-        /// </summary>
-        public string Function { protected set; get; }
-
-        /// <summary>
-        /// Neuron bias.
-        /// </summary>
-        public double Bias { protected set; get; }
+        public IActivationFunction Function
+        {
+            get
+            {
+                return Neurons[0].Function;
+            }
+        }
 
         /// <summary>
         /// Neuron network layer constructor.
         /// </summary>
-        /// <param name="size"></param>
-        /// <param name="inputs"></param>
-        /// <param name="function"></param>
-        /// <param name="bias"></param>
-        /// <param name="weights"></param>
-        public Layer(int size, int inputs, Vector<double> weights, double bias, string function)
+        /// <param name="neurons"></param>
+        public Layer(List<Neuron> neurons)
         {
-            neurons = new List<Neuron>();
+            if (neurons.Count == 0)
+            {
+                throw new Exception("Layer must have at least one neuron.");
+            }
+
+            Neurons = new List<Neuron>();
+
+            for (int i = 0; i < neurons.Count; i++)
+            {
+                Neurons.Add(neurons[i]);
+            }
+        }
+
+        /// <summary>
+        /// Generate new layer with randomly generated neurons.
+        /// </summary>
+        /// <param name="size"></param>
+        /// <param name="inputCount"></param>
+        /// <param name="function"></param>
+        /// <returns></returns>
+        public static Layer Generate(int size, int inputCount, string function)
+        {
+            var neurons = new List<Neuron>();
 
             for (int i = 0; i < size; i++)
             {
-                var neuron = new Neuron(inputs, weights, bias, function);
-                neurons.Add(neuron);
+                neurons.Add(Neuron.Generate(inputCount, function));
             }
+
+            return new Layer(neurons);
         }
 
         /// <summary>
@@ -61,16 +99,16 @@ namespace ML.Network
         /// </summary>
         /// <param name="inputs"></param>
         /// <returns></returns>
-        public Vector<double> Process(Vector<double> inputs)
+        public Vector<double> Forward(Vector<double> inputs)
         {
-            if (Inputs != inputs.Count)
+            if (InputCount != inputs.Count)
             {
                 throw new Exception("Incorrect number of inputs.");
             }
 
             return Vector<double>.Build.Dense(Size, index =>
             {
-                return neurons[index].Process(inputs);
+                return Neurons[index].Forward(inputs);
             });
         }
     }

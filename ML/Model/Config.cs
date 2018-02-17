@@ -9,6 +9,7 @@ namespace ML.Model
         public enum Types
         {
             Perceptron,
+            Network
         }
 
         [JsonProperty]
