@@ -1,0 +1,24 @@
+{
+  "type": "network",
+  "inputs": 2,
+  "learningRate": 0.1,
+  "batch": "full",
+  "batchSize": 5,
+  "layers": [
+    {
+      "type": "fc",
+      "neurons": 4,
+      "function": "sigmoid"
+    },
+    {
+      "type": "fc",
+      "neurons": 4,
+      "function": "sigmoid"
+    },
+    {
+      "type": "fc",
+      "neurons": 1,
+      "function": "sigmoid"
+    }
+  ]
+}
