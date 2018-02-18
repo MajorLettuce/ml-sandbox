@@ -95,6 +95,11 @@ namespace ML.Network
         }
 
         /// <summary>
+        /// Previous outputs.
+        /// </summary>
+        public Vector<double> Intermediate { get; set; }
+
+        /// <summary>
         /// Process given inputs through the layer neurons.
         /// </summary>
         /// <param name="inputs"></param>
@@ -106,9 +111,13 @@ namespace ML.Network
                 throw new Exception("Incorrect number of inputs.");
             }
 
+            Intermediate = Vector<double>.Build.Dense(Size, 0);
+
             return Vector<double>.Build.Dense(Size, index =>
             {
-                return Neurons[index].Forward(inputs);
+                Intermediate.At(index, Neurons[index].Forward(inputs));
+
+                return Intermediate.At(index);
             });
         }
 
@@ -119,7 +128,7 @@ namespace ML.Network
         /// Output (previous level) gradient vector.
         /// </param>
         /// <returns></returns>
-        public Vector<double> Backward(Vector<double> gradient)
+        public Matrix<double> Backward(Vector<double> gradient)
         {
             if (Neurons.Count != gradient.Count)
             {
@@ -127,19 +136,23 @@ namespace ML.Network
             }
 
             // Layer input weights gradient.
-            var vector = Vector<double>.Build.Dense(InputCount, 0);
+            // Matrix [(number of inputs) * (number of neurons)] x [3 (bias, weights, input vectors)]
+            var matrix = Matrix<double>.Build.Dense(InputCount * Size, 3, 0);
 
             // Each output contributes to each input weight gradient.
             for (int i = 0; i < Size; i++)
             {
                 var neuron = Neurons[i];
-                vector.Add(neuron.Backward(gradient[i]));
+                var backward = neuron.Backward(gradient[i]);
+                for (int j = 0; j < InputCount; j++)
+                {
+                    matrix.SetRow(i * InputCount + j, backward.Row(j));
+                }
+                //matrix = neuron.Backward(gradient[i]).Add(matrix);
             }
 
-            Console.WriteLine("vector: {0}", vector);
-
             // Return gradient vector.
-            return vector;
+            return matrix;
         }
     }
 }

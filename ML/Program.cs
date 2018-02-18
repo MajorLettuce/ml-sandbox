@@ -10,12 +10,19 @@ using MathNet.Numerics.LinearAlgebra;
 using OxyPlot;
 using OxyPlot.WindowsForms;
 
+using ML.Network;
+
 namespace ML
 {
     class Program
     {
         static void Main(string[] args)
         {
+            /*
+            Tinker();
+            Console.ReadLine();
+            Environment.Exit(0);
+            */
             NetworkModel model = null;
             bool teaching = false;
             int epochRuns = 1;
@@ -68,13 +75,15 @@ namespace ML
 
                 while (epochRuns == 0 || epoch < epochRuns)
                 {
-                    Console.Write("Epoch {0}: ", ++epoch);
+                    Console.Clear();
+
+                    Console.Write("Epoch {0}:\n", ++epoch);
 
                     var previous = model.GetInfo();
 
                     var error = model.RunEpoch();
 
-                    Console.Write("error {0} ", error);
+                    Console.Write("Error: {0} ", error);
 
                     series.Points.Add(new DataPoint(epoch, error));
 
@@ -177,6 +186,149 @@ namespace ML
                 {
                     Console.WriteLine("Incorrect format.");
                 }
+            }
+        }
+
+        static void Tinker()
+        {
+            /*
+            var matrix1 = Matrix<double>.Build.DenseOfArray(new double[,] {
+                { 0, 0.5, 0 },
+                { 0, 0, 1 }
+            });
+            var matrix2 = Matrix<double>.Build.DenseOfArray(new double[,] {
+                { 0, -0.02, 0 },
+                { 0, 0, 1 }
+            });
+
+            Console.WriteLine(matrix1);
+            Console.WriteLine(matrix2);
+            Console.WriteLine(matrix1.Add(matrix2));
+
+            Console.ReadLine();
+            Environment.Exit(0);
+            */
+            var v = Vector<double>.Build;
+            //var o1 = new Neuron(2, v.DenseOfArray(new double[] { 2.0, -3.0 }), -3.0, "Sigmoid");
+            //var forward1 = o1.Forward(v.DenseOfArray(new double[] { -1, -2 }));
+            //Console.WriteLine("forward1: {0}", forward1);
+            //var o2 = new Neuron(2, v.DenseOfArray(new double[] { 2.0, -3.0 }), -3.0, "Sigmoid");
+
+            //var forward2 = o2.Forward(v.DenseOfArray(new double[] { -1, -2 }));
+            //Console.WriteLine("forward2: {0}", forward2);
+            /*
+            var cost = 1;
+            var backward1 = o1.Backward(cost);
+            var backward2 = o2.Backward(cost);
+            Console.WriteLine("backward1 gradient: {0}", backward1);
+            */
+            var neurons1 = new List<Neuron>
+            {
+                Neuron.Generate(2, "Sigmoid"),
+                Neuron.Generate(2, "Sigmoid")
+            };
+
+            var layer1 = new Layer(neurons1);
+
+            var neurons2 = new List<Neuron>
+            {
+                Neuron.Generate(2, "Sigmoid"),
+                Neuron.Generate(2, "Sigmoid")
+            };
+
+            var layer2 = new Layer(neurons2);
+
+            var inputs = v.DenseOfArray(new double[] { 0.05, 0.10 });
+
+            var targets = v.DenseOfArray(new double[] { 0.01, 0.99 });
+
+            var runs = 0;
+
+            var rate = 0.5;
+
+            double cost = 0;
+
+
+            while (true)
+            {
+
+                Console.Clear();
+
+                Console.WriteLine("run {0}:\n", ++runs);
+
+                Console.WriteLine("inputs: {0}", inputs);
+
+                Console.WriteLine("targets: {0}", targets);
+
+                var forward1 = layer1.Forward(inputs);
+                Console.WriteLine("layer 1 forward: {0}", forward1);
+
+                var forward2 = layer2.Forward(inputs);
+                Console.WriteLine("layer 2 forward: {0}", forward2);
+
+                var diff = targets.Subtract(forward2);
+
+                Console.WriteLine("diff: {0}", diff);
+
+                //var backward = layer.Backward(v.DenseOfArray(new double[] { 1, 1 }));
+                var backward2 = layer2.Backward(diff);
+                Console.WriteLine("layer 2 backward: {0}", backward2);
+
+                for (int i = 0; i < layer2.Size; i++)
+                {
+                    var neuron = layer2.Neurons[i];
+                    var neuronBackward = backward2.SubMatrix(i * layer2.InputCount, layer2.InputCount, 0, backward2.ColumnCount);
+                    for (int j = 0; j < layer2.InputCount; j++)
+                    {
+                        var neuronInputBackward = neuronBackward.Row(j);
+                        neuron.Weights.At(j, neuron.Weights.At(j) + neuronInputBackward.At(1) * rate);
+                    }
+                    //neuron.Weights = neuron.Weights.Subtract(backward.Column(1).Multiply(rate));
+                    neuron.Bias += rate * neuronBackward.Row(0).At(0);
+
+                }
+
+                // Recalculate layer output vector
+                diff = v.Dense(layer1.Size);
+
+                // Take previous layer rows, and sum all output gradient columns (3),
+                // corresponding to each neuron.
+                // Number of rows in a group is number of neurons in current layer.
+                for (int i = 0; i < backward2.RowCount; i += layer1.Size)
+                {
+                    double outputGradientSum = 0;
+                    for (int j = 0; j < layer1.Size; j++)
+                    {
+                        outputGradientSum += backward2.Row(i + j).At(2);
+                    }
+                    diff.At(i / layer1.Size, outputGradientSum);
+                }
+
+                Console.WriteLine("diff: {0}", diff);
+
+                var backward1 = layer1.Backward(diff);
+                Console.WriteLine("layer 1 backward: {0}", backward1);
+
+                for (int i = 0; i < layer1.Size; i++)
+                {
+                    var neuron = layer1.Neurons[i];
+                    var neuronBackward = backward1.SubMatrix(i * layer1.InputCount, layer1.InputCount, 0, backward1.ColumnCount);
+                    for (int j = 0; j < layer1.InputCount; j++)
+                    {
+                        var neuronInputBackward = neuronBackward.Row(j);
+                        neuron.Weights.At(j, neuron.Weights.At(j) + neuronInputBackward.At(1) * rate);
+                    }
+                    //neuron.Weights = neuron.Weights.Subtract(backward.Column(1).Multiply(rate));
+                    neuron.Bias += rate * neuronBackward.Row(0).At(0);
+
+                }
+
+                cost = targets.Subtract(layer2.Forward(inputs)).PointwisePower(2).Divide(2).Sum();
+
+                Console.WriteLine("cost {0}", cost);
+
+                Console.ReadKey(true);
+
             }
         }
     }

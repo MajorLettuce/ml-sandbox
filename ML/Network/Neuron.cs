@@ -76,6 +76,10 @@ namespace ML.Network
             return new Neuron(inputCount, weights, bias, function);
         }
 
+        private Vector<double> weightGradient;
+        private Vector<double> inputGradient;
+        private Matrix<double> localGradient;
+
         /// <summary>
         /// Process given inputs through the neuron.
         /// </summary>
@@ -90,34 +94,83 @@ namespace ML.Network
 
             CachedInputs = inputs.Clone();
 
-            double result = 0;
+            double net = 0;
 
             for (int i = 0; i < inputs.Count; i++)
             {
-                result += inputs[i] * Weights[i];
+                net += inputs[i] * Weights[i];
             }
 
-            result += Bias;
+            net += Bias;
 
-            return Function.Calculate(result);
+            // Matrix [number of inputs] x [3 (bias, weights, input vectors)]
+            localGradient = Matrix<double>.Build.Dense(InputCount, 3, (row, column) =>
+            {
+                switch (column)
+                {
+                    default: // Bias gradient.
+                        {
+                            // Bias has always input of 1.
+                            return Function.Derivative(1);
+                        }
+
+                    case 1: // Weights gradient.
+                        {
+                            // Weight gradient depends on input value.
+                            return Function.Derivative(net) * inputs[row];
+                        }
+                    case 2: // Input gradient.
+                        {
+                            return Function.Derivative(net) * Weights[row];
+                        }
+                }
+            });
+
+            weightGradient = Vector<double>.Build.Dense(inputs.Count + 1, index =>
+            {
+                if (index == 0)
+                {
+                    // Bias has always input of 1.
+                    return Function.Derivative(1);
+                }
+                else
+                {
+                    // Weight gradient depends on input value.
+                    return Function.Derivative(net) * inputs[index - 1];
+                    // Output gradient.
+                    // return Function.Derivative(result) * Weights[index - 1];
+                }
+            });
+
+            inputGradient = Vector<double>.Build.Dense(inputs.Count, index =>
+            {
+                // Output gradient.
+                return Function.Derivative(net) * Weights[index];
+            });
+
+            return Function.Calculate(net);
         }
 
         /// <summary>
-        /// Backpropagate output gradient to the neuron inputs.
+        /// Backpropagate output gradient to the neuron bias, weights and inputs.
         /// </summary>
         /// <param name="gradient">
         /// Output (previous level) gradient scalar (single value/neuron connection).
         /// </param>
         /// <returns></returns>
-        public Vector<double> Backward(double gradient)
+        public Matrix<double> Backward(double gradient)
         {
-            Console.WriteLine("gradient: {0}", gradient);
+            return localGradient.Multiply(gradient);
             // Return gradient vector.
+            /*
+            return weightGradient.Multiply(gradient);
+
             return Vector<double>.Build.Dense(InputCount, (index) =>
             {
-                Console.WriteLine("derivative: {0}", Function.Derivative(CachedInputs.At(index)));
+                //Console.WriteLine("derivative: {0}", Function.Derivative(CachedInputs.At(index)));
                 return Function.Derivative(CachedInputs.At(index)) * gradient;
             });
+            */
         }
     }
 }
