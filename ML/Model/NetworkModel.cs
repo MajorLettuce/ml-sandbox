@@ -71,9 +71,6 @@ namespace ML.Model
             OutputTransformer = Activator.CreateInstance(
                 Type.GetType(String.Format("ML.Model.Transformers.{0}OutputTransformer", inputTransformerName))
             ) as IOutputTransformer;
-
-            System.Diagnostics.Debug.WriteLine(InputTransformer);
-            System.Diagnostics.Debug.WriteLine(OutputTransformer);
         }
 
         /// <summary>
