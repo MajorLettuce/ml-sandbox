@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
 using Newtonsoft.Json;
+using ML.Model.Transformers;
 
 namespace ML.Model
 {
@@ -29,6 +30,16 @@ namespace ML.Model
         public bool Loaded { get; protected set; }
 
         /// <summary>
+        /// Input data transformer.
+        /// </summary>
+        public IInputTransformer InputTransformer { get; protected set; }
+
+        /// <summary>
+        /// Output data transformer.
+        /// </summary>
+        public IOutputTransformer OutputTransformer { get; protected set; }
+
+        /// <summary>
         /// Default machine learning model constructor.
         /// </summary>
         /// <param name="model"></param>
@@ -38,6 +49,31 @@ namespace ML.Model
             Name = model;
             Config = config;
             Loaded = false;
+
+            string inputTransformerName;
+            string outputTransformerName;
+
+            if (Config.Transformers != null)
+            {
+                inputTransformerName = Config.Transformers.Input.ToString();
+                outputTransformerName = Config.Transformers.Output.ToString();
+            }
+            else
+            {
+                inputTransformerName = TransformersConfig.InputTransformerType.Vector.ToString();
+                outputTransformerName = TransformersConfig.OutputTransformerType.Vector.ToString();
+            }
+
+            InputTransformer = Activator.CreateInstance(
+                Type.GetType(String.Format("ML.Model.Transformers.{0}InputTransformer", inputTransformerName))
+            ) as IInputTransformer;
+
+            OutputTransformer = Activator.CreateInstance(
+                Type.GetType(String.Format("ML.Model.Transformers.{0}OutputTransformer", inputTransformerName))
+            ) as IOutputTransformer;
+
+            System.Diagnostics.Debug.WriteLine(InputTransformer);
+            System.Diagnostics.Debug.WriteLine(OutputTransformer);
         }
 
         /// <summary>

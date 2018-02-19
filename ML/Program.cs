@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using CommandLine;
 using ML.Model;
+using ML.Model;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.Data.Text;
 using OxyPlot;
@@ -98,13 +99,13 @@ namespace ML
                 {
                     Console.Clear();
 
-                    Console.Write("Epoch {0} / {1}:", ++epoch, epochOffset + epochRuns);
+                    Console.Write("Epoch {0} / {1}:\n\n", ++epoch, epochOffset + epochRuns);
 
                     var previous = model.GetInfo();
 
                     var error = model.RunEpoch();
 
-                    Console.Write(" error: {0}", error);
+                    Console.Write("Error: {0}", error);
 
                     series.Points.Add(new DataPoint(epoch, error));
 
@@ -126,32 +127,40 @@ namespace ML
             }
             else
             {
-                Console.WriteLine("Running execution loop\n");
-
-                while (true)
+                if (model.InputTransformer is Model.Transformers.VectorInputTransformer)
                 {
-                    Console.WriteLine("Model info:");
-                    Console.WriteLine("===========");
-                    Console.WriteLine(model.GetInfo());
+                    Console.WriteLine("Running execution loop\n");
 
-                    DisplayActions(model);
-
-                    var inputs = Vector<double>.Build.Dense(model.Config.Inputs);
-
-                    for (int i = 0; i < model.Config.Inputs; i++)
+                    while (true)
                     {
-                        inputs[i] = ReadDouble(String.Format("Input[{0}]", i));
+                        Console.WriteLine("Model info:");
+                        Console.WriteLine("===========");
+                        Console.WriteLine(model.GetInfo());
+
+                        DisplayActions(model);
+
+                        var inputs = Vector<double>.Build.Dense(model.Config.Inputs);
+
+                        for (int i = 0; i < model.Config.Inputs; i++)
+                        {
+                            inputs[i] = ReadDouble(String.Format("Input[{0}]", i));
+                        }
+
+                        Console.Clear();
+
+                        Console.WriteLine("Inputs:");
+                        Console.WriteLine("=======");
+                        Console.WriteLine(inputs.ToVectorString());
+
+                        Console.WriteLine("Result:");
+                        Console.WriteLine("=======");
+                        Console.WriteLine(model.OutputTransformer.Transform(model.Process(inputs)));
                     }
-
-                    Console.Clear();
-
-                    Console.WriteLine("Inputs:");
-                    Console.WriteLine("=======");
-                    Console.WriteLine(inputs.ToVectorString());
-
-                    Console.WriteLine("Result:");
-                    Console.WriteLine("=======");
-                    Console.WriteLine(model.Process(inputs).ToVectorString());
+                }
+                else
+                {
+                    Console.WriteLine("Unsupported model input transformer '{0}'.", model.InputTransformer);
+                    Environment.Exit(1);
                 }
             }
         }

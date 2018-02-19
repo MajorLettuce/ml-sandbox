@@ -64,6 +64,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\TransformersConfig.cs" />
     <Compile Include="Model\LayerConfig.cs" />
     <Compile Include="Model\Network.cs" />
     <Compile Include="Model\PerceptronConfig.cs" />
@@ -71,6 +72,10 @@
     <Compile Include="Model\Config.cs" />
     <Compile Include="Model\NetworkModel.cs" />
     <Compile Include="Model\Perceptron.cs" />
+    <Compile Include="Model\Transformers\IOutputTransformer.cs" />
+    <Compile Include="Model\Transformers\IInputTransformer.cs" />
+    <Compile Include="Model\Transformers\VectorOutputTransformer.cs" />
+    <Compile Include="Model\Transformers\VectorInputTransformer.cs" />
     <Compile Include="Network\ActivationFunction\Hardlim.cs" />
     <Compile Include="Network\ActivationFunction\ReLU.cs" />
     <Compile Include="Network\ActivationFunction\Sigmoid.cs" />

@@ -6,6 +6,7 @@ using MathNet.Numerics;
 using MathNet.Numerics.Data.Text;
 using MathNet.Numerics.LinearAlgebra;
 using ML.Network;
+using ML.Model.Transformers;
 
 namespace ML.Model
 {
@@ -283,10 +284,10 @@ namespace ML.Model
         {
             if (!File.Exists(Path(file)))
             {
-                throw new Exception("No training data to teach.");
+                throw new Exception(String.Format("Cannot find '{0}' training data file.", Path(file)));
             }
 
-            return DelimitedReader.Read<double>(Path(file));
+            return new VectorInputTransformer().Transform(Path(file));
         }
 
         /// <summary>

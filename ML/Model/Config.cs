@@ -25,5 +25,8 @@ namespace ML.Model
 
         [JsonProperty]
         public double? Threshold { get; set; }
+
+        [JsonProperty]
+        public TransformersConfig Transformers { get; set; }
     }
 }
