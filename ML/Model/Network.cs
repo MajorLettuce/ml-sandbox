@@ -280,6 +280,11 @@ namespace ML.Model
             return cost;
         }
 
+        /// <summary>
+        /// Load data using appropriate model transformer.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
         protected Matrix<double> LoadData(string file)
         {
             if (!File.Exists(Path(file)))
@@ -287,7 +292,7 @@ namespace ML.Model
                 throw new Exception(String.Format("Cannot find '{0}' training data file.", Path(file)));
             }
 
-            return new VectorInputTransformer().Transform(Path(file));
+            return InputTransformer.Transform(Path(file));
         }
 
         /// <summary>
