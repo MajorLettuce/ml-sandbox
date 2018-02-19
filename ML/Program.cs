@@ -14,6 +14,8 @@ namespace ML
 {
     class Program
     {
+        public static bool Debug { get; protected set; }
+
         static void Main(string[] args)
         {
             /*
@@ -30,6 +32,7 @@ namespace ML
                 {
                     teaching = opts.Teaching;
                     epochRuns = opts.EpochRuns;
+                    Debug = opts.Debug;
 
 #if !DEBUG
                     try
@@ -95,13 +98,13 @@ namespace ML
                 {
                     Console.Clear();
 
-                    Console.Write("Epoch {0}:\n", ++epoch);
+                    Console.Write("Epoch {0} / {1}:", ++epoch, epochOffset + epochRuns);
 
                     var previous = model.GetInfo();
 
                     var error = model.RunEpoch();
 
-                    Console.Write("Error: {0} ", error);
+                    Console.Write(" error: {0}", error);
 
                     series.Points.Add(new DataPoint(epoch, error));
 
@@ -155,7 +158,7 @@ namespace ML
 
         static void DisplayActions(NetworkModel model, OxyPlot.Series.LineSeries series = null)
         {
-            Console.WriteLine("\nActions:");
+            Console.WriteLine("\n\nActions:");
             Console.WriteLine("[Any key] Run | [Q]uit | [S]ave | [D]elete");
             Console.WriteLine("");
 

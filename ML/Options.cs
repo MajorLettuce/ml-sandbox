@@ -4,6 +4,9 @@ namespace ML
 {
     class Options
     {
+        [Option('d', "debug", Default = false, HelpText = "Enable debug mode.")]
+        public bool Debug { get; set; }
+
         [Option('t', "teach", Default = false, HelpText = "Run model in teaching mode.")]
         public bool Teaching { get; set; }
 

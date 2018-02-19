@@ -84,6 +84,7 @@ namespace ML.Model
                     inputCount = layer.NeuronCount;
                     count++;
                 }
+                Loaded = true;
             }
             catch
             {
@@ -278,21 +279,27 @@ namespace ML.Model
             return cost;
         }
 
+        protected Matrix<double> LoadData(string file)
+        {
+            if (!File.Exists(Path(file)))
+            {
+                throw new Exception("No training data to teach.");
+            }
+
+            return DelimitedReader.Read<double>(Path(file));
+        }
+
         /// <summary>
         /// Run teaching epoch.
         /// </summary>
         /// <returns></returns>
         public override double RunEpoch()
         {
-            if (!File.Exists(Path("data")))
-            {
-                throw new Exception("No training data to teach.");
-            }
+            var data = LoadData("train");
 
             double averageCost = 0;
-            List<Matrix<double>> finalGradient = null;
 
-            var data = DelimitedReader.Read<double>(Path("data"));
+            List<Matrix<double>> finalGradient = null;
 
             int[] permutation = null;
 
@@ -327,16 +334,11 @@ namespace ML.Model
                 throw new Exception("Invalid data format.");
             }
 
-            Console.WriteLine("batch size: {0}", permutation.Length);
-
-            // Mini-batch
             foreach (var index in permutation)
             {
                 var cost = Teach(
                     data.Row(index).SubVector(0, Config.Inputs),
                     data.Row(index).SubVector(Config.Inputs, layers.Last().Size),
-                    //Vector<double>.Build.Dense(new double[] { 0.05, 0.1 }),
-                    //Vector<double>.Build.Dense(new double[] { 0.01, 0.99 }),
                     out List<Matrix<double>> gradient
                 );
 
@@ -363,9 +365,12 @@ namespace ML.Model
             {
                 var layer = layers[i];
                 var layerGradient = finalGradient[layers.Count - 1 - i];
-#if DEBUG
-                Console.WriteLine("accumulated gradient for layer {0}: {1}", i, layerGradient);
-#endif
+
+                if (Program.Debug)
+                {
+                    Console.WriteLine("accumulated gradient for layer {0}: {1}", i, layerGradient);
+                }
+
                 for (int j = 0; j < layer.Size; j++)
                 {
                     for (int k = 0; k < layer.Neurons[j].InputCount; k++)
