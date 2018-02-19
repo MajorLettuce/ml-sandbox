@@ -20,6 +20,11 @@ namespace ML.Model
         List<Layer> layers;
 
         /// <summary>
+        /// Cached training data after first load.
+        /// </summary>
+        Matrix<double> cachedData;
+
+        /// <summary>
         /// Artificial neural network model constructor.
         /// </summary>
         /// <returns></returns>
@@ -282,17 +287,25 @@ namespace ML.Model
 
         /// <summary>
         /// Load data using appropriate model transformer.
+        /// Caches data after first load.
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
         protected Matrix<double> LoadData(string file)
         {
+            if (cachedData != null)
+            {
+                return cachedData;
+            }
+
             if (!File.Exists(Path(file)))
             {
                 throw new Exception(String.Format("Cannot find '{0}' training data file.", Path(file)));
             }
 
-            return InputTransformer.Transform(Path(file));
+            cachedData = InputTransformer.Transform(Path(file));
+
+            return cachedData;
         }
 
         /// <summary>
