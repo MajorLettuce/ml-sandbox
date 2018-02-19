@@ -24,6 +24,11 @@ namespace ML.Model
         static protected string file = "model.json";
 
         /// <summary>
+        /// Indicates whether the model was loaded with previous state.
+        /// </summary>
+        public bool Loaded { get; protected set; }
+
+        /// <summary>
         /// Default machine learning model constructor.
         /// </summary>
         /// <param name="model"></param>
@@ -32,6 +37,7 @@ namespace ML.Model
         {
             Name = model;
             Config = config;
+            Loaded = false;
         }
 
         /// <summary>

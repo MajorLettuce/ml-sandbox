@@ -1,12 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CommandLine;
 using ML.Model;
-using ML.Network.ActivationFunction;
 using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.Data.Text;
 using OxyPlot;
 using OxyPlot.WindowsForms;
 
@@ -54,8 +52,26 @@ namespace ML
             {
                 Console.WriteLine("Launching model in teaching mode");
 
+                // Save newly generated model.
+                if (!model.Loaded)
+                {
+                    model.Save();
+                }
+
                 var plotModel = new PlotModel { Title = String.Format("{0} model \"{1}\" learning graph", model.Config.Type, model.Name) };
                 var series = new OxyPlot.Series.LineSeries();
+
+                try
+                {
+                    var graphMatrix = DelimitedReader.Read<double>(model.Path("graph"));
+
+                    for (int i = 0; i < graphMatrix.RowCount; i++)
+                    {
+                        series.Points.Add(new DataPoint(i + 1, graphMatrix.Row(i).At(0)));
+                    }
+                }
+                catch { }
+
                 plotModel.Series.Add(series);
                 plotModel.Axes.Add(new OxyPlot.Axes.LinearAxis
                 {
@@ -69,11 +85,13 @@ namespace ML
                     Title = "Error",
                 });
 
-                var epoch = 0;
+                var epochOffset = series.Points.Count;
+
+                var epoch = epochOffset;
 
                 var epochRunStep = epochRuns;
 
-                while (epochRuns == 0 || epoch < epochRuns)
+                while (epochRuns == 0 || epoch < epochRuns + epochOffset)
                 {
                     Console.Clear();
 
@@ -93,13 +111,13 @@ namespace ML
                         Environment.Exit(1);
                     }
 
-                    if (epochRuns == 0 || epoch >= epochRuns)
+                    if (epochRuns == 0 || epoch >= epochRuns + epochOffset)
                     {
                         epochRuns += epochRunStep;
                         var pngExporter = new PngExporter();
                         pngExporter.ExportToFile(plotModel, model.Path("learning-graph.png"));
 
-                        DisplayActions(model);
+                        DisplayActions(model, series);
                     }
                 }
             }
@@ -135,7 +153,7 @@ namespace ML
             }
         }
 
-        static void DisplayActions(NetworkModel model)
+        static void DisplayActions(NetworkModel model, OxyPlot.Series.LineSeries series = null)
         {
             Console.WriteLine("\nActions:");
             Console.WriteLine("[Any key] Run | [Q]uit | [S]ave | [D]elete");
@@ -151,6 +169,26 @@ namespace ML
                 case ConsoleKey.S:
                     {
                         Console.WriteLine("Saving model...");
+                        if (series != null)
+                        {
+                            try
+                            {
+                                var graphPoints = new List<Vector<double>>();
+
+                                foreach (var point in series.Points)
+                                {
+                                    graphPoints.Add(Vector<double>.Build.Dense(new double[] { point.Y }));
+                                }
+
+                                DelimitedWriter.Write(model.Path("graph"), Matrix<double>.Build.DenseOfRowVectors(graphPoints));
+
+                                Console.WriteLine("Saved graph data");
+                            }
+                            catch
+                            {
+                                Console.WriteLine("Unable to save graph data");
+                            }
+                        }
                         model.Save();
                         Console.WriteLine("Model has been saved.");
                         Environment.Exit(0);
@@ -159,6 +197,10 @@ namespace ML
                 case ConsoleKey.D:
                     {
                         Console.WriteLine("Deleting model...");
+                        if (File.Exists(model.Path("graph")))
+                        {
+                            File.Delete(model.Path("graph"));
+                        }
                         model.Delete();
                         Console.WriteLine("Model has been deleted.");
                         Environment.Exit(0);
