@@ -50,18 +50,13 @@ namespace ML.Model
             Config = config;
             Loaded = false;
 
-            string inputTransformerName;
-            string outputTransformerName;
+            string inputTransformerName = TransformersConfig.InputTransformerType.Vector.ToString();
+            string outputTransformerName = TransformersConfig.OutputTransformerType.Vector.ToString();
 
             if (Config.Transformers != null)
             {
                 inputTransformerName = Config.Transformers.Input.ToString();
                 outputTransformerName = Config.Transformers.Output.ToString();
-            }
-            else
-            {
-                inputTransformerName = TransformersConfig.InputTransformerType.Vector.ToString();
-                outputTransformerName = TransformersConfig.OutputTransformerType.Vector.ToString();
             }
 
             InputTransformer = Activator.CreateInstance(
@@ -69,7 +64,7 @@ namespace ML.Model
             ) as IInputTransformer;
 
             OutputTransformer = Activator.CreateInstance(
-                Type.GetType(String.Format("ML.Model.Transformers.{0}OutputTransformer", inputTransformerName))
+                Type.GetType(String.Format("ML.Model.Transformers.{0}OutputTransformer", outputTransformerName))
             ) as IOutputTransformer;
         }
 
