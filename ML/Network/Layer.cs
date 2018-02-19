@@ -95,11 +95,6 @@ namespace ML.Network
         }
 
         /// <summary>
-        /// Previous outputs.
-        /// </summary>
-        public Vector<double> Intermediate { get; set; }
-
-        /// <summary>
         /// Process given inputs through the layer neurons.
         /// </summary>
         /// <param name="inputs"></param>
@@ -111,13 +106,9 @@ namespace ML.Network
                 throw new Exception("Incorrect number of inputs.");
             }
 
-            Intermediate = Vector<double>.Build.Dense(Size, 0);
-
             return Vector<double>.Build.Dense(Size, index =>
             {
-                Intermediate.At(index, Neurons[index].Forward(inputs));
-
-                return Intermediate.At(index);
+                return Neurons[index].Forward(inputs);
             });
         }
 
