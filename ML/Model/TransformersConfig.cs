@@ -18,6 +18,7 @@ namespace ML.Model
         {
             Vector,
             Single,
+            Mnist,
         }
 
         [JsonProperty]

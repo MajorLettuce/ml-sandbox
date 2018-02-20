@@ -64,6 +64,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Utility\BigEndianBinaryReader.cs" />
+    <Compile Include="Model\TrainConfig.cs" />
     <Compile Include="Model\TransformersConfig.cs" />
     <Compile Include="Model\LayerConfig.cs" />
     <Compile Include="Model\Network.cs" />
@@ -75,6 +77,7 @@
     <Compile Include="Model\Transformers\LabelTransformer.cs" />
     <Compile Include="Model\Transformers\MnistDataTransformer.cs" />
     <Compile Include="Model\Transformers\DataTransformer.cs" />
+    <Compile Include="Model\Transformers\MnistLabelTransformer.cs" />
     <Compile Include="Model\Transformers\SingleLabelTransformer.cs" />
     <Compile Include="Model\Transformers\VectorLabelTransformer.cs" />
     <Compile Include="Model\Transformers\VectorDataTransformer.cs" />
