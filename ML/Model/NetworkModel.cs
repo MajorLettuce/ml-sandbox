@@ -68,6 +68,15 @@ namespace ML.Model
                 Type.GetType(String.Format("ML.Model.Transformers.{0}LabelTransformer", labelTransformerName)),
                 this
             ) as LabelTransformer;
+
+            if (Config.Train == null)
+            {
+                Config.Train = new TrainConfig
+                {
+                    Data = "train-data",
+                    Labels = "train-labels",
+                };
+            }
         }
 
         /// <summary>

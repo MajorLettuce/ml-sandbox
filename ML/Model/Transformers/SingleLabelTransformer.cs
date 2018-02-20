@@ -63,7 +63,7 @@ namespace ML.Model.Transformers
 
             if (trainLabels == null)
             {
-                trainLabels = File.ReadAllLines(model.Path(model.Config.TrainLabels));
+                trainLabels = File.ReadAllLines(model.Path(model.Config.Train.Labels));
                 cachedTrainLabels = trainLabels;
             }
 

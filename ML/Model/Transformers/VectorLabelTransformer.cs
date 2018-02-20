@@ -29,7 +29,7 @@ namespace ML.Model.Transformers
         /// <returns></returns>
         public override Matrix<double> TransformLabels()
         {
-            return DelimitedReader.Read<double>(model.Path(model.Config.TrainLabels));
+            return DelimitedReader.Read<double>(model.Path(model.Config.Train.Labels));
         }
     }
 }
