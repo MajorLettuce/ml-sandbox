@@ -75,6 +75,7 @@
     <Compile Include="Model\Transformers\LabelTransformer.cs" />
     <Compile Include="Model\Transformers\MnistDataTransformer.cs" />
     <Compile Include="Model\Transformers\DataTransformer.cs" />
+    <Compile Include="Model\Transformers\SingleLabelTransformer.cs" />
     <Compile Include="Model\Transformers\VectorLabelTransformer.cs" />
     <Compile Include="Model\Transformers\VectorDataTransformer.cs" />
     <Compile Include="Network\ActivationFunction\Hardlim.cs" />
