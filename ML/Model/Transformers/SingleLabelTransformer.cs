@@ -73,14 +73,10 @@ namespace ML.Model.Transformers
 
             var matrix = Matrix<double>.Build.Dense(trainLabels.Length, realLabels.Count);
 
-            System.Diagnostics.Debug.WriteLine(diagonal);
-
             for (int i = 0; i < matrix.RowCount; i++)
             {
                 matrix.SetRow(i, diagonal.Row(realLabels.FindIndex(label => label == trainLabels[i])));
             }
-
-            System.Diagnostics.Debug.WriteLine(matrix);
 
             cachedTrainLabelsMatrix = matrix;
 
