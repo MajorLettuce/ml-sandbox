@@ -31,24 +31,14 @@ namespace ML.Model
         public bool Loaded { get; protected set; }
 
         /// <summary>
-        /// Input data transformer.
+        /// Data transformer.
         /// </summary>
-        public IDataTransformer DataTransformer { get; protected set; }
+        public DataTransformer DataTransformer { get; protected set; }
 
         /// <summary>
-        /// Output data transformer.
+        /// Label transformer.
         /// </summary>
-        public ILabelTransformer LabelTransformer { get; protected set; }
-
-        /// <summary>
-        /// Cached data after first load.
-        /// </summary>
-        Matrix<double> cachedData;
-
-        /// <summary>
-        /// Cached labels after first load.
-        /// </summary>
-        Matrix<double> cachedLabels;
+        public LabelTransformer LabelTransformer { get; protected set; }
 
         /// <summary>
         /// Default machine learning model constructor.
@@ -72,11 +62,12 @@ namespace ML.Model
 
             DataTransformer = Activator.CreateInstance(
                 Type.GetType(String.Format("ML.Model.Transformers.{0}DataTransformer", dataTransformerName))
-            ) as IDataTransformer;
+            ) as DataTransformer;
 
             LabelTransformer = Activator.CreateInstance(
-                Type.GetType(String.Format("ML.Model.Transformers.{0}LabelTransformer", labelTransformerName))
-            ) as ILabelTransformer;
+                Type.GetType(String.Format("ML.Model.Transformers.{0}LabelTransformer", labelTransformerName)),
+                this
+            ) as LabelTransformer;
         }
 
         /// <summary>
@@ -200,54 +191,6 @@ namespace ML.Model
         static public object ReadConfig(string model, Type type)
         {
             return JsonConvert.DeserializeObject(ReadResource(model, file), type);
-        }
-
-        /// <summary>
-        /// Load data using appropriate model transformer.
-        /// Caches data after first load by default.
-        /// </summary>
-        /// <param name="file"></param>
-        /// <param name="cache"></param>
-        /// <returns></returns>
-        protected Matrix<double> LoadData(string file, bool cache = true)
-        {
-            if (cache && cachedData != null)
-            {
-                return cachedData;
-            }
-
-            if (!File.Exists(Path(file)))
-            {
-                throw new Exception(String.Format("Cannot find '{0}' data file.", Path(file)));
-            }
-
-            cachedData = DataTransformer.TransformData(Path(file));
-
-            return cachedData;
-        }
-
-        /// <summary>
-        /// Load labels using appropriate model transformer.
-        /// Caches labels after first load by default.
-        /// </summary>
-        /// <param name="file"></param>
-        /// <param name="cache"></param>
-        /// <returns></returns>
-        protected Matrix<double> LoadLabels(string file, bool cache = true)
-        {
-            if (cache && cachedLabels != null)
-            {
-                return cachedLabels;
-            }
-
-            if (!File.Exists(Path(file)))
-            {
-                throw new Exception(String.Format("Cannot find '{0}' labels file.", Path(file)));
-            }
-
-            cachedLabels = LabelTransformer.TransformLabels(Path(file));
-
-            return cachedLabels;
         }
 
         /// <summary>

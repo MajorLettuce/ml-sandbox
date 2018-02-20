@@ -5,14 +5,16 @@ using MathNet.Numerics.Data.Text;
 
 namespace ML.Model.Transformers
 {
-    class VectorDataTransformer : IDataTransformer
+    class VectorDataTransformer : DataTransformer
     {
+        //public VectorDataTransformer(NetworkModel model) : base(model) { }
+
         /// <summary>
         /// Transform input data into matrix with rows as input vectors.
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public Matrix<double> TransformData(string file)
+        public override Matrix<double> TransformData(string file)
         {
             return DelimitedReader.Read<double>(file);
         }
@@ -22,7 +24,7 @@ namespace ML.Model.Transformers
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public Matrix<double> TransformLabels(string file)
+        public override Matrix<double> TransformLabels(string file)
         {
             var labels = File.ReadAllLines(file);
 

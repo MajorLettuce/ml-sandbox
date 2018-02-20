@@ -286,7 +286,7 @@ namespace ML.Model
         /// <returns></returns>
         public override double RunEpoch()
         {
-            var data = LoadData(Config.TrainingData);
+            var data = DataTransformer.TransformData(Path(Config.TrainingData));
 
             double accumulatedCost = 0;
 
@@ -329,8 +329,7 @@ namespace ML.Model
             {
                 var cost = Train(
                     data.Row(index),
-                    LoadLabels(Config.TrainLabels).Row(index),
-                    //LoadLabels(Config.TrainLabels).Row(index),
+                    LabelTransformer.TransformLabels().Row(index),
                     out List<Matrix<double>> gradient
                 );
 

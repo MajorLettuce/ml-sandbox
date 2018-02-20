@@ -1,35 +1,36 @@
 ﻿using System.Collections.Generic;
 using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.Data.Text;
 
 namespace ML.Model.Transformers
 {
-    class VectorLabelTransformer : LabelTransformer
+    abstract class LabelTransformer
     {
+        /// <summary>
+        /// Model this transformer belongs to.
+        /// </summary>
+        protected NetworkModel model;
+
         /// <summary>
         /// Label transformer constructor.
         /// </summary>
         /// <param name="model"></param>
-        public VectorLabelTransformer(NetworkModel model) : base(model) { }
+        public LabelTransformer(NetworkModel model)
+        {
+            this.model = model;
+        }
 
         /// <summary>
         /// Transform output vector into a list of labels.
         /// </summary>
         /// <param name="output"></param>
         /// <returns></returns>
-        public override List<string> TransformOutput(Vector<double> output)
-        {
-            return new List<string> { output.ToVectorString() };
-        }
+        public abstract List<string> TransformOutput(Vector<double> output);
 
         /// <summary>
         /// Transform labels into a matrix with rows as target values.
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public override Matrix<double> TransformLabels()
-        {
-            return DelimitedReader.Read<double>(model.Path(model.Config.TrainLabels));
-        }
+        public abstract Matrix<double> TransformLabels();
     }
 }
