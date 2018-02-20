@@ -113,7 +113,6 @@ namespace ML.Network
                             // Bias has always input of 1.
                             return Function.Derivative(1);
                         }
-
                     case 1: // Weights gradient.
                         {
                             // Weight gradient depends on input value.
@@ -124,28 +123,6 @@ namespace ML.Network
                             return Function.Derivative(net) * Weights[row];
                         }
                 }
-            });
-
-            weightGradient = Vector<double>.Build.Dense(inputs.Count + 1, index =>
-            {
-                if (index == 0)
-                {
-                    // Bias has always input of 1.
-                    return Function.Derivative(1);
-                }
-                else
-                {
-                    // Weight gradient depends on input value.
-                    return Function.Derivative(net) * inputs[index - 1];
-                    // Output gradient.
-                    // return Function.Derivative(result) * Weights[index - 1];
-                }
-            });
-
-            inputGradient = Vector<double>.Build.Dense(inputs.Count, index =>
-            {
-                // Output gradient.
-                return Function.Derivative(net) * Weights[index];
             });
 
             return Function.Calculate(net);

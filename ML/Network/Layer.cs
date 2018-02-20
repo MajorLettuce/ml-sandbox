@@ -139,7 +139,6 @@ namespace ML.Network
                 {
                     matrix.SetRow(i * InputCount + j, backward.Row(j));
                 }
-                //matrix = neuron.Backward(gradient[i]).Add(matrix);
             }
 
             // Return gradient vector.
