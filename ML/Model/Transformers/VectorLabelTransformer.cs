@@ -7,7 +7,7 @@ namespace ML.Model.Transformers
     class VectorLabelTransformer : ILabelTransformer
     {
         /// <summary>
-        /// Transform output vector to a list of labels.
+        /// Transform output vector into a list of labels.
         /// </summary>
         /// <param name="output"></param>
         /// <returns></returns>
@@ -17,7 +17,7 @@ namespace ML.Model.Transformers
         }
 
         /// <summary>
-        /// Transform labels into matrix with rows as target values.
+        /// Transform labels into a matrix with rows as target values.
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>

@@ -6,14 +6,14 @@ namespace ML.Model.Transformers
     interface ILabelTransformer
     {
         /// <summary>
-        /// Transform output vector to a list of labels.
+        /// Transform output vector into a list of labels.
         /// </summary>
         /// <param name="output"></param>
         /// <returns></returns>
         List<string> TransformOutput(Vector<double> output);
 
         /// <summary>
-        /// Transform labels into matrix with rows as target values.
+        /// Transform labels into a matrix with rows as target values.
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
