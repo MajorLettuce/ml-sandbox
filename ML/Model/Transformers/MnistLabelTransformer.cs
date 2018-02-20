@@ -17,18 +17,11 @@ namespace ML.Model.Transformers
         public MnistLabelTransformer(NetworkModel model) : base(model) { }
 
         /// <summary>
-        /// Transform train labels into a matrix with rows as target values
-        /// by using original label list.
+        /// Load training labels.
         /// </summary>
-        /// <param name="file"></param>
         /// <returns></returns>
-        public override Matrix<double> TransformLabels()
+        protected override string[] LoadTrainLabels()
         {
-            if (cachedTrainLabelsMatrix != null)
-            {
-                return cachedTrainLabelsMatrix;
-            }
-
             var trainLabels = cachedTrainLabels;
 
             if (trainLabels == null)
@@ -52,20 +45,7 @@ namespace ML.Model.Transformers
                 cachedTrainLabels = trainLabels;
             }
 
-            var realLabels = LoadLabels().ToList();
-
-            var diagonal = Matrix<double>.Build.DenseDiagonal(realLabels.Count, 1);
-
-            var matrix = Matrix<double>.Build.Dense(trainLabels.Length, realLabels.Count);
-
-            for (int i = 0; i < matrix.RowCount; i++)
-            {
-                matrix.SetRow(i, diagonal.Row(realLabels.FindIndex(label => label == trainLabels[i])));
-            }
-
-            cachedTrainLabelsMatrix = matrix;
-
-            return matrix;
+            return trainLabels;
         }
     }
 }

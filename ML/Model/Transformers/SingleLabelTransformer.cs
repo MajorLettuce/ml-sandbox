@@ -20,7 +20,11 @@ namespace ML.Model.Transformers
         /// <param name="model"></param>
         public SingleLabelTransformer(NetworkModel model) : base(model) { }
 
-        protected string[] LoadLabels()
+        /// <summary>
+        /// Load labels.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual string[] LoadLabels()
         {
             var labels = cachedLabels;
 
@@ -47,6 +51,23 @@ namespace ML.Model.Transformers
         }
 
         /// <summary>
+        /// Load training labels.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual string[] LoadTrainLabels()
+        {
+            var trainLabels = cachedTrainLabels;
+
+            if (trainLabels == null)
+            {
+                trainLabels = File.ReadAllLines(model.Path(model.Config.Train.Labels));
+                cachedTrainLabels = trainLabels;
+            }
+
+            return trainLabels;
+        }
+
+        /// <summary>
         /// Transform train labels into a matrix with rows as target values
         /// by using original label list.
         /// </summary>
@@ -59,13 +80,7 @@ namespace ML.Model.Transformers
                 return cachedTrainLabelsMatrix;
             }
 
-            var trainLabels = cachedTrainLabels;
-
-            if (trainLabels == null)
-            {
-                trainLabels = File.ReadAllLines(model.Path(model.Config.Train.Labels));
-                cachedTrainLabels = trainLabels;
-            }
+            var trainLabels = LoadTrainLabels();
 
             var realLabels = LoadLabels().ToList();
 
