@@ -28,5 +28,21 @@ namespace ML.Model
 
         [JsonProperty]
         public TransformersConfig Transformers { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue("train-data")]
+        public string TrainingData { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue("train-labels")]
+        public string TrainLabels { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue("test-data")]
+        public string TestData { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue("test-labels")]
+        public string TestLabels { get; set; }
     }
 }

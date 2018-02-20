@@ -5,22 +5,22 @@ namespace ML.Model
 {
     class TransformersConfig
     {
-        public enum InputTransformerType
+        public enum DataTransformerType
         {
             Vector,
         }
 
         [JsonProperty]
         [JsonConverter(typeof(StringEnumConverter))]
-        public InputTransformerType Input { get; set; }
+        public DataTransformerType Data { get; set; }
 
-        public enum OutputTransformerType
+        public enum LabelTransformerType
         {
             Vector,
         }
 
         [JsonProperty]
         [JsonConverter(typeof(StringEnumConverter))]
-        public OutputTransformerType Output { get; set; }
+        public LabelTransformerType Label { get; set; }
     }
 }

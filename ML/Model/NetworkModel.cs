@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
 using MathNet.Numerics.LinearAlgebra;
 using Newtonsoft.Json;
 using ML.Model.Transformers;
@@ -32,12 +33,22 @@ namespace ML.Model
         /// <summary>
         /// Input data transformer.
         /// </summary>
-        public IInputTransformer InputTransformer { get; protected set; }
+        public IDataTransformer DataTransformer { get; protected set; }
 
         /// <summary>
         /// Output data transformer.
         /// </summary>
-        public IOutputTransformer OutputTransformer { get; protected set; }
+        public ILabelTransformer LabelTransformer { get; protected set; }
+
+        /// <summary>
+        /// Cached data after first load.
+        /// </summary>
+        Matrix<double> cachedData;
+
+        /// <summary>
+        /// Cached labels after first load.
+        /// </summary>
+        Matrix<double> cachedLabels;
 
         /// <summary>
         /// Default machine learning model constructor.
@@ -50,22 +61,22 @@ namespace ML.Model
             Config = config;
             Loaded = false;
 
-            string inputTransformerName = TransformersConfig.InputTransformerType.Vector.ToString();
-            string outputTransformerName = TransformersConfig.OutputTransformerType.Vector.ToString();
+            string dataTransformerName = TransformersConfig.DataTransformerType.Vector.ToString();
+            string labelTransformerName = TransformersConfig.LabelTransformerType.Vector.ToString();
 
             if (Config.Transformers != null)
             {
-                inputTransformerName = Config.Transformers.Input.ToString();
-                outputTransformerName = Config.Transformers.Output.ToString();
+                dataTransformerName = Config.Transformers.Data.ToString();
+                labelTransformerName = Config.Transformers.Label.ToString();
             }
 
-            InputTransformer = Activator.CreateInstance(
-                Type.GetType(String.Format("ML.Model.Transformers.{0}InputTransformer", inputTransformerName))
-            ) as IInputTransformer;
+            DataTransformer = Activator.CreateInstance(
+                Type.GetType(String.Format("ML.Model.Transformers.{0}DataTransformer", dataTransformerName))
+            ) as IDataTransformer;
 
-            OutputTransformer = Activator.CreateInstance(
-                Type.GetType(String.Format("ML.Model.Transformers.{0}OutputTransformer", outputTransformerName))
-            ) as IOutputTransformer;
+            LabelTransformer = Activator.CreateInstance(
+                Type.GetType(String.Format("ML.Model.Transformers.{0}LabelTransformer", labelTransformerName))
+            ) as ILabelTransformer;
         }
 
         /// <summary>
@@ -192,6 +203,54 @@ namespace ML.Model
         }
 
         /// <summary>
+        /// Load data using appropriate model transformer.
+        /// Caches data after first load by default.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="cache"></param>
+        /// <returns></returns>
+        protected Matrix<double> LoadData(string file, bool cache = true)
+        {
+            if (cache && cachedData != null)
+            {
+                return cachedData;
+            }
+
+            if (!File.Exists(Path(file)))
+            {
+                throw new Exception(String.Format("Cannot find '{0}' data file.", Path(file)));
+            }
+
+            cachedData = DataTransformer.TransformData(Path(file));
+
+            return cachedData;
+        }
+
+        /// <summary>
+        /// Load labels using appropriate model transformer.
+        /// Caches labels after first load by default.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="cache"></param>
+        /// <returns></returns>
+        protected Matrix<double> LoadLabels(string file, bool cache = true)
+        {
+            if (cache && cachedLabels != null)
+            {
+                return cachedLabels;
+            }
+
+            if (!File.Exists(Path(file)))
+            {
+                throw new Exception(String.Format("Cannot find '{0}' labels file.", Path(file)));
+            }
+
+            cachedLabels = LabelTransformer.TransformLabels(Path(file));
+
+            return cachedLabels;
+        }
+
+        /// <summary>
         /// Get model info as text string.
         /// </summary>
         /// <returns></returns>
@@ -206,6 +265,16 @@ namespace ML.Model
         /// <param name="inputs"></param>
         /// <returns></returns>
         abstract public Vector<double> Process(Vector<double> inputs);
+
+        /// <summary>
+        /// Process given inputs through the model and get list of labels.
+        /// </summary>
+        /// <param name="inputs"></param>
+        /// <returns></returns>
+        virtual public List<string> Run(Vector<double> inputs)
+        {
+            return LabelTransformer.TransformOutput(Process(inputs));
+        }
 
         /// <summary>
         /// Run teaching epoch.

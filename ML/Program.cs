@@ -3,7 +3,6 @@ using System.IO;
 using System.Collections.Generic;
 using CommandLine;
 using ML.Model;
-using ML.Model;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.Data.Text;
 using OxyPlot;
@@ -127,7 +126,7 @@ namespace ML
             }
             else
             {
-                if (model.InputTransformer is Model.Transformers.VectorInputTransformer)
+                if (model.DataTransformer is Model.Transformers.VectorDataTransformer)
                 {
                     Console.WriteLine("Running execution loop\n");
 
@@ -154,12 +153,16 @@ namespace ML
 
                         Console.WriteLine("Result:");
                         Console.WriteLine("=======");
-                        Console.WriteLine(model.OutputTransformer.Transform(model.Process(inputs)));
+                        foreach (var label in model.Run(inputs))
+                        {
+                            Console.WriteLine(label);
+                        }
+                        Console.WriteLine();
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Unsupported model input transformer '{0}'.", model.InputTransformer);
+                    Console.WriteLine("Unsupported model input transformer '{0}'.", model.DataTransformer);
                     Environment.Exit(1);
                 }
             }

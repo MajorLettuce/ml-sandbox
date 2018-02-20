@@ -20,11 +20,6 @@ namespace ML.Model
         List<Layer> layers;
 
         /// <summary>
-        /// Cached training data after first load.
-        /// </summary>
-        Matrix<double> cachedData;
-
-        /// <summary>
         /// Artificial neural network model constructor.
         /// </summary>
         /// <returns></returns>
@@ -178,7 +173,7 @@ namespace ML.Model
         /// <param name="targets"></param>
         /// <param name="gradient"></param>
         /// <returns></returns>
-        public double Teach(Vector<double> inputs, Vector<double> targets, out List<Matrix<double>> gradientList)
+        public double Train(Vector<double> inputs, Vector<double> targets, out List<Matrix<double>> gradientList)
         {
             // Calculate total squared error vector for each output.
             //double error = targets.Subtract(Process(inputs)).PointwisePower(2).Divide(2).Sum();
@@ -286,37 +281,14 @@ namespace ML.Model
         }
 
         /// <summary>
-        /// Load data using appropriate model transformer.
-        /// Caches data after first load.
-        /// </summary>
-        /// <param name="file"></param>
-        /// <returns></returns>
-        protected Matrix<double> LoadData(string file)
-        {
-            if (cachedData != null)
-            {
-                return cachedData;
-            }
-
-            if (!File.Exists(Path(file)))
-            {
-                throw new Exception(String.Format("Cannot find '{0}' training data file.", Path(file)));
-            }
-
-            cachedData = InputTransformer.Transform(Path(file));
-
-            return cachedData;
-        }
-
-        /// <summary>
         /// Run teaching epoch.
         /// </summary>
         /// <returns></returns>
         public override double RunEpoch()
         {
-            var data = LoadData("train");
+            var data = LoadData(Config.TrainingData);
 
-            double averageCost = 0;
+            double accumulatedCost = 0;
 
             List<Matrix<double>> finalGradient = null;
 
@@ -348,16 +320,17 @@ namespace ML.Model
                     }
             }
 
-            if (data.ColumnCount != Config.Inputs + layers.Last().Size)
+            if (data.ColumnCount != Config.Inputs)
             {
                 throw new Exception("Invalid data format.");
             }
 
             foreach (var index in permutation)
             {
-                var cost = Teach(
-                    data.Row(index).SubVector(0, Config.Inputs),
-                    data.Row(index).SubVector(Config.Inputs, layers.Last().Size),
+                var cost = Train(
+                    data.Row(index),
+                    LoadLabels(Config.TrainLabels).Row(index),
+                    //LoadLabels(Config.TrainLabels).Row(index),
                     out List<Matrix<double>> gradient
                 );
 
@@ -376,7 +349,7 @@ namespace ML.Model
                         finalGradient[i] = finalGradient[i].Add(gradient[i]);
                     }
                 }
-                averageCost += cost;
+                accumulatedCost += cost;
             }
 
             // Go through each layer of the network in opposite direction.
@@ -401,7 +374,7 @@ namespace ML.Model
                 }
             }
 
-            return averageCost;
+            return accumulatedCost;
         }
     }
 }

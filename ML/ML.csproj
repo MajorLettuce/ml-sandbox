@@ -72,10 +72,11 @@
     <Compile Include="Model\Config.cs" />
     <Compile Include="Model\NetworkModel.cs" />
     <Compile Include="Model\Perceptron.cs" />
-    <Compile Include="Model\Transformers\IOutputTransformer.cs" />
-    <Compile Include="Model\Transformers\IInputTransformer.cs" />
-    <Compile Include="Model\Transformers\VectorOutputTransformer.cs" />
-    <Compile Include="Model\Transformers\VectorInputTransformer.cs" />
+    <Compile Include="Model\Transformers\ILabelTransformer.cs" />
+    <Compile Include="Model\Transformers\IDataTransformer.cs" />
+    <Compile Include="Model\Transformers\MnistDataTransformer.cs" />
+    <Compile Include="Model\Transformers\VectorLabelTransformer.cs" />
+    <Compile Include="Model\Transformers\VectorDataTransformer.cs" />
     <Compile Include="Network\ActivationFunction\Hardlim.cs" />
     <Compile Include="Network\ActivationFunction\ReLU.cs" />
     <Compile Include="Network\ActivationFunction\Sigmoid.cs" />
