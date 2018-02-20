@@ -17,6 +17,7 @@ namespace ML.Model
         public enum LabelTransformerType
         {
             Vector,
+            Single,
         }
 
         [JsonProperty]
