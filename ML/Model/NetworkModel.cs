@@ -61,7 +61,8 @@ namespace ML.Model
             }
 
             DataTransformer = Activator.CreateInstance(
-                Type.GetType(String.Format("ML.Model.Transformers.{0}DataTransformer", dataTransformerName))
+                Type.GetType(String.Format("ML.Model.Transformers.{0}DataTransformer", dataTransformerName)),
+                this
             ) as DataTransformer;
 
             LabelTransformer = Activator.CreateInstance(

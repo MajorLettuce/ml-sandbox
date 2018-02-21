@@ -286,7 +286,7 @@ namespace ML.Model
         /// <returns></returns>
         public override double RunEpoch()
         {
-            var data = DataTransformer.TransformData(Path(Config.Train.Data));
+            var data = DataTransformer.Transform(Path(Config.Train.Data));
 
             double accumulatedCost = 0;
 
