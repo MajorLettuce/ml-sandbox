@@ -1,10 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using MathNet.Numerics;
 using MathNet.Numerics.Data.Text;
 using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.Distributions;
 using ML.Network;
 using ML.Model.Transformers;
 
@@ -18,6 +21,10 @@ namespace ML.Model
         /// List of network layers.
         /// </summary>
         List<Layer> layers;
+
+        protected Matrix<double>[] accumulatedGradient;
+
+        protected double accumulatedCost;
 
         /// <summary>
         /// Artificial neural network model constructor.
@@ -171,20 +178,21 @@ namespace ML.Model
         /// </summary>
         /// <param name="inputs"></param>
         /// <param name="targets"></param>
-        /// <param name="gradient"></param>
+        /// <param name="cost"></param>
+        /// <param name="gradients"></param>
         /// <returns></returns>
-        public double Train(Vector<double> inputs, Vector<double> targets, out List<Matrix<double>> gradientList)
+        public void Train(Vector<double> inputs, Vector<double> targets, out double cost, out List<Matrix<double>> gradients)
         {
             // Calculate total squared error vector for each output.
             //double error = targets.Subtract(Process(inputs)).PointwisePower(2).Divide(2).Sum();
             //Console.WriteLine("error {0}", error);
             // Cost of current training example.
-            double cost = Process(inputs).Subtract(targets).PointwisePower(2).Divide(2).Sum();
+            cost = Process(inputs).Subtract(targets).PointwisePower(2).Divide(2).Sum();
             // Calculate backpropagation gradients for each weight.
             // This will allow to accumulate them and apply once at the end of the epoch.
             // Each layer has arbitrary amount of weights,
             // so it's not possible to fit them in a matrix, the list is used instead.
-            var gradients = new List<Matrix<double>>();
+            gradients = new List<Matrix<double>>();
 
             Matrix<double> gradient = null;
 
@@ -238,7 +246,6 @@ namespace ML.Model
 
                 for (int j = 0; j < currentLayer.Size; j++)
                 {
-                    var neuron = currentLayer.Neurons[j];
                     var neuronBackward = gradient.SubMatrix(
                         j * currentLayer.InputCount,
                         currentLayer.InputCount,
@@ -250,34 +257,19 @@ namespace ML.Model
 
                     for (int k = 0; k < currentLayer.InputCount; k++)
                     {
-                        matrix.At(j, k + 1, /*neuron.Weights.At(k) + */neuronBackward.Row(k).At(1) * Config.LearningRate);
-                        //neuron.Weights.At(k, neuron.Weights.At(k) + neuronInputBackward.At(1) * Config.LearningRate);
+                        matrix.At(j, k + 1, Config.LearningRate * neuronBackward.Row(k).At(1));
                     }
-                    //neuron.Bias += Config.LearningRate * neuronBackward.Row(0).At(0);
                 }
 
-                //Console.WriteLine("layer {0} gradient: {1}", i, matrix);
-
-                /*
-                var deltas = outputs.Subtract(targets).PointwiseMultiply(Vector<double>.Build.Dense(layer.Size, index =>
-                {
-                    return layer.Function.Derivative(outputs.At(index));
-                }));
-
-                Console.WriteLine("deltas: {0}", deltas);
-                */
-                /*
-                var vector = Vector<double>.Build.Dense(layer.Size, index =>
-                {
-                    return 0;
-                });
-                */
                 gradients.Add(matrix);
             }
+        }
 
-            gradientList = gradients;
-
-            return cost;
+        protected class TrainState
+        {
+            public int index;
+            public Vector<double> input;
+            public Vector<double> target;
         }
 
         /// <summary>
@@ -287,10 +279,6 @@ namespace ML.Model
         public override double RunEpoch()
         {
             var data = DataTransformer.Transform(Path(Config.Train.Data));
-
-            double accumulatedCost = 0;
-
-            List<Matrix<double>> finalGradient = null;
 
             int[] permutation = null;
 
@@ -310,12 +298,12 @@ namespace ML.Model
                             batchSize = Config.BatchSize;
                         }
 
-                        permutation = Combinatorics.GeneratePermutation(batchSize);
+                        permutation = Combinatorics.GenerateVariation(data.RowCount, batchSize);
                         break;
                     }
                 default:
                     {
-                        permutation = new int[] { new Random().Next(0, data.RowCount) };
+                        permutation = new int[] { DiscreteUniform.Sample(0, data.RowCount - 1) };
                         break;
                     }
             }
@@ -325,37 +313,74 @@ namespace ML.Model
                 throw new Exception("Invalid data format.");
             }
 
-            foreach (var index in permutation)
+            accumulatedCost = 0;
+
+            accumulatedGradient = new Matrix<double>[layers.Count];
+
+            var tasks = new Task[permutation.Length];
+
+            for (int i = 0; i < permutation.Length; i++)
             {
-                var cost = Train(
+                var index = permutation[i];
+                /*
+                tasks[i] = Task.Factory.StartNew((object trainState) =>
+                {
+                    var state = trainState as TrainState;
+
+                    Train(
+                        state.input,
+                        state.target,
+                        out double cost,
+                        out List<Matrix<double>> gradient
+                    );
+
+                // Console.WriteLine("\nTask cost {0} + {1}", cost, accumulatedCost);
+
+                accumulatedCost += cost;
+
+                    for (int g = 0; g < gradient.Count; g++)
+                    {
+                        if (accumulatedGradient[g] == null)
+                        {
+                            accumulatedGradient[g] = Matrix<double>.Build.Dense(gradient[g].RowCount, gradient[g].ColumnCount);
+                        }
+                        accumulatedGradient[g] += gradient[g];
+                    }
+                }, new TrainState
+                {
+                    input = data.Row(index),
+                    target = LabelTransformer.TransformLabels().Row(index)
+                }, TaskCreationOptions.LongRunning);
+
+                //tasks[i].Wait(1);
+                */
+                Train(
                     data.Row(index),
                     LabelTransformer.TransformLabels().Row(index),
+                    out double cost,
                     out List<Matrix<double>> gradient
                 );
 
-                if (finalGradient == null)
-                {
-                    finalGradient = new List<Matrix<double>>();
-                    foreach (var g in gradient)
-                    {
-                        finalGradient.Add(g);
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < gradient.Count; i++)
-                    {
-                        finalGradient[i] = finalGradient[i].Add(gradient[i]);
-                    }
-                }
                 accumulatedCost += cost;
+
+                for (int g = 0; g < gradient.Count; g++)
+                {
+                    if (accumulatedGradient[g] == null)
+                    {
+                        accumulatedGradient[g] = Matrix<double>.Build.Dense(gradient[g].RowCount, gradient[g].ColumnCount);
+                    }
+                    accumulatedGradient[g] += gradient[g];
+                }
+
             }
+
+            // Task.WaitAll(tasks, Timeout.Infinite, CancellationToken.None);
 
             // Go through each layer of the network in opposite direction.
             for (int i = layers.Count - 1; i >= 0; i--)
             {
                 var layer = layers[i];
-                var layerGradient = finalGradient[layers.Count - 1 - i];
+                var layerGradient = accumulatedGradient[layers.Count - 1 - i];
 
                 if (Program.Debug)
                 {
@@ -373,7 +398,9 @@ namespace ML.Model
                 }
             }
 
-            return accumulatedCost;
+            return accumulatedCost / permutation.Length;
+
+            return Math.Sqrt(accumulatedCost / permutation.Length);
         }
     }
 }
