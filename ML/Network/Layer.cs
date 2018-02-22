@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using MathNet.Numerics.LinearAlgebra;
 using ML.Network.ActivationFunction;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ML.Network
 {
@@ -105,11 +107,31 @@ namespace ML.Network
             {
                 throw new Exception("Incorrect number of inputs.");
             }
+            
+            var vector = Vector<double>.Build.Dense(Size);
 
-            return Vector<double>.Build.Dense(Size, index =>
+            var tasks = new Task[Size];
+
+            for (int i = 0; i < tasks.Length; i++)
             {
-                return Neurons[index].Forward(inputs);
-            });
+                tasks[i] = Task.Factory.StartNew((object state) =>
+                {
+                    var data = state as LayerForwardTaskInfo;
+                    vector.At(data.index, Neurons[data.index].Forward(inputs));
+                }, new LayerForwardTaskInfo
+                {
+                    index = i
+                });
+            }
+
+            Task.WaitAll(tasks);
+
+            return vector;
+        }
+
+        protected class LayerForwardTaskInfo
+        {
+            public int index;
         }
 
         /// <summary>
