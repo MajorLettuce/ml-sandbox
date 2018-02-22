@@ -99,17 +99,27 @@ namespace ML
 
                 var stopwatch = new Stopwatch();
 
+                var epochStopwatch = new Stopwatch();
+
+                bool forceStop = false;
+
+                stopwatch.Restart();
+
                 while (epochRuns == 0 || epoch < epochRuns + epochOffset)
                 {
                     Console.Write("\nepoch {0} / {1}...", ++epoch, epochOffset + epochRuns);
-                    
+
                     var previous = model.GetInfo();
 
-                    stopwatch.Restart();
+                    epochStopwatch.Restart();
+
+                    stopwatch.Start();
 
                     var error = model.RunEpoch();
 
-                    Console.Write(" {0:f2}s,", stopwatch.Elapsed.TotalSeconds);
+                    stopwatch.Stop();
+
+                    Console.Write(" {0:f2} + {1:f2}s,", stopwatch.Elapsed.TotalSeconds, epochStopwatch.Elapsed.TotalSeconds);
 
                     Console.Write(" error {0}", error);
 
@@ -118,11 +128,12 @@ namespace ML
                     if (model.Config.Threshold != null && Math.Abs(error) <= model.Config.Threshold)
                     {
                         Console.WriteLine("\nError threshold ({0}) reached. Finished learning.", model.Config.Threshold);
-                        Environment.Exit(1);
+                        forceStop = true;
                     }
 
-                    if (epochRuns == 0 || epoch >= epochRuns + epochOffset)
+                    if (epochRuns == 0 || epoch >= epochRuns + epochOffset || forceStop)
                     {
+                        forceStop = false;
                         epochRuns += epochRunStep;
                         var pngExporter = new PngExporter();
                         pngExporter.ExportToFile(plotModel, model.Path("learning-graph.png"));
