@@ -26,6 +26,7 @@ namespace ML
             NetworkModel model = null;
             bool teaching = false;
             int epochRuns = 1;
+            string inputFile = null;
 
             CommandLine.Parser.Default.ParseArguments<Options>(args)
                 .WithParsed<Options>(opts =>
@@ -39,6 +40,7 @@ namespace ML
                     {
 #endif
                     model = NetworkModel.Load(opts.Model);
+                    inputFile = model.Path(opts.Input);
 #if !DEBUG
 
                         Console.Clear();
@@ -96,19 +98,17 @@ namespace ML
 
                 while (epochRuns == 0 || epoch < epochRuns + epochOffset)
                 {
-                    Console.Clear();
-
-                    Console.Write("Epoch {0} / {1}:\n\n", ++epoch, epochOffset + epochRuns);
+                    Console.Write("\nepoch {0} / {1}:", ++epoch, epochOffset + epochRuns);
 
                     var previous = model.GetInfo();
 
-                    var error = model.RunEpoch();
+                    var cost = model.RunEpoch();
 
-                    Console.Write("Error: {0}", error);
+                    Console.Write(" cost {0}", cost);
 
-                    series.Points.Add(new DataPoint(epoch, error));
+                    series.Points.Add(new DataPoint(epoch, cost));
 
-                    if (model.Config.Threshold != null && Math.Abs(error) <= model.Config.Threshold)
+                    if (model.Config.Threshold != null && Math.Abs(cost) <= model.Config.Threshold)
                     {
                         Console.WriteLine("\nError threshold ({0}) reached. Finished learning.", model.Config.Threshold);
                         Environment.Exit(1);
@@ -158,6 +158,21 @@ namespace ML
                             Console.WriteLine(label);
                         }
                         Console.WriteLine();
+                    }
+                }
+                else if (model.DataTransformer is Model.Transformers.MnistDataTransformer)
+                {
+                    if (!File.Exists(inputFile))
+                    {
+                        Console.WriteLine("Input file '{0}' doesn't exist", inputFile);
+                        Environment.Exit(1);
+                    }
+
+                    var inputs = model.InputTransformer.Transform(inputFile).Row(0);
+
+                    foreach (var label in model.Run(inputs))
+                    {
+                        Console.WriteLine(label);
                     }
                 }
                 else

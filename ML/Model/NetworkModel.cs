@@ -31,6 +31,11 @@ namespace ML.Model
         public bool Loaded { get; protected set; }
 
         /// <summary>
+        /// Input transformer.
+        /// </summary>
+        public InputTransformer InputTransformer { get; protected set; }
+
+        /// <summary>
         /// Data transformer.
         /// </summary>
         public DataTransformer DataTransformer { get; protected set; }
@@ -51,14 +56,21 @@ namespace ML.Model
             Config = config;
             Loaded = false;
 
+            string inputTransformerName = TransformersConfig.InputTransformerType.MonochromeImage.ToString();
             string dataTransformerName = TransformersConfig.DataTransformerType.Vector.ToString();
             string labelTransformerName = TransformersConfig.LabelTransformerType.Vector.ToString();
 
             if (Config.Transformers != null)
             {
+                inputTransformerName = Config.Transformers.Input.ToString();
                 dataTransformerName = Config.Transformers.Data.ToString();
                 labelTransformerName = Config.Transformers.Label.ToString();
             }
+
+            InputTransformer = Activator.CreateInstance(
+                Type.GetType(String.Format("ML.Model.Transformers.{0}InputTransformer", inputTransformerName)),
+                this
+            ) as InputTransformer;
 
             DataTransformer = Activator.CreateInstance(
                 Type.GetType(String.Format("ML.Model.Transformers.{0}DataTransformer", dataTransformerName)),

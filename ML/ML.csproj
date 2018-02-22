@@ -64,6 +64,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\Transformers\InputTransformer.cs" />
+    <Compile Include="Model\Transformers\MonochromeImageInputTransformer.cs" />
     <Compile Include="Utility\BigEndianBinaryReader.cs" />
     <Compile Include="Model\TrainConfig.cs" />
     <Compile Include="Model\TransformersConfig.cs" />

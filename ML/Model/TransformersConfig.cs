@@ -5,9 +5,20 @@ namespace ML.Model
 {
     class TransformersConfig
     {
+        public enum InputTransformerType
+        {
+            MonochromeImage,
+        }
+
+        [JsonProperty]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public InputTransformerType Input { get; set; }
+
         public enum DataTransformerType
         {
             Vector,
+            Mnist,
+            MonochromeImage,
         }
 
         [JsonProperty]
