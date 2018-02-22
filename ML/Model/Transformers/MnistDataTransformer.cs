@@ -35,20 +35,51 @@ namespace ML.Model.Transformers
             var rows = reader.ReadInt32();
             var columns = reader.ReadInt32();
 
-            cachedData = Matrix<double>.Build.Dense(count, rows * columns, (row, column) =>
+            var vectors = new Vector<double>[count];
+
+            for (int i = 0; i < count; i++)
             {
-                var pixel = reader.ReadByte();
-                if (pixel == 0)
+                vectors[i] = Vector<double>.Build.Dense(rows * columns, index =>
                 {
-                    return 0;
-                }
-                else
-                {
-                    return pixel / 255.0;
-                }
-            });
+                    return reader.ReadByte() / 255.0;
+                });
+            }
+
+            cachedData = Matrix<double>.Build.DenseOfRowVectors(vectors);
             /*
-            System.Diagnostics.Debug.WriteLine(cachedData);
+            foreach (var image in Directory.EnumerateFiles(model.Path("dataset")))
+            {
+                File.Delete(image);
+            }
+
+            Directory.CreateDirectory(model.Path("dataset"));
+
+            foreach (var image in cachedData.EnumerateRowsIndexed())
+            {
+                var bitmap = new Bitmap(28, 28);
+
+                for (int i = 0; i < image.Item2.Count; i++)
+                {
+                    var color = (byte)(image.Item2.At(i) * Byte.MaxValue);
+                    bitmap.SetPixel(i % 28, i / 28, Color.FromArgb(color, color, color));
+                }
+                bitmap.Save(String.Format(model.Path("dataset/{0}.png"), image.Item1 + 1), System.Drawing.Imaging.ImageFormat.Png);
+                bitmap.Dispose();
+            }
+            */
+            /*
+            var v = cachedData.Row(0);
+            for (int i = 0; i < v.Count; i++)
+            {
+                if (i % 28 == 0)
+                {
+                    System.Diagnostics.Debug.Write(String.Format("\n{0:d3}: ", i));
+                }
+                System.Diagnostics.Debug.Write(String.Format(" {0:f3}", v[i]));
+            }
+            */
+            /*
+            System.Diagnostics.Debug.WriteLine(cachedData.Row(0));
 
             System.Console.ReadLine();
             */
