@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Diagnostics;
 using System.Collections.Generic;
 using CommandLine;
 using ML.Model;
@@ -96,19 +97,25 @@ namespace ML
 
                 var epochRunStep = epochRuns;
 
+                var stopwatch = new Stopwatch();
+
                 while (epochRuns == 0 || epoch < epochRuns + epochOffset)
                 {
-                    Console.Write("\nepoch {0} / {1}:", ++epoch, epochOffset + epochRuns);
-
+                    Console.Write("\nepoch {0} / {1}...", ++epoch, epochOffset + epochRuns);
+                    
                     var previous = model.GetInfo();
 
-                    var cost = model.RunEpoch();
+                    stopwatch.Restart();
 
-                    Console.Write(" cost {0}", cost);
+                    var error = model.RunEpoch();
 
-                    series.Points.Add(new DataPoint(epoch, cost));
+                    Console.Write(" {0:f2}s,", stopwatch.Elapsed.TotalSeconds);
 
-                    if (model.Config.Threshold != null && Math.Abs(cost) <= model.Config.Threshold)
+                    Console.Write(" error {0}", error);
+
+                    series.Points.Add(new DataPoint(epoch, error));
+
+                    if (model.Config.Threshold != null && Math.Abs(error) <= model.Config.Threshold)
                     {
                         Console.WriteLine("\nError threshold ({0}) reached. Finished learning.", model.Config.Threshold);
                         Environment.Exit(1);
