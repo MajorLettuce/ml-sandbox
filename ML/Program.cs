@@ -42,8 +42,8 @@ namespace ML
                     try
                     {
 #endif
-                    model = NetworkModel.Load(opts.Model);
-                    inputFile = model.Path(opts.Input);
+                        model = NetworkModel.Load(opts.Model);
+                        inputFile = model.Path(opts.Input);
 #if !DEBUG
 
                         Console.Clear();
@@ -144,6 +144,9 @@ namespace ML
                         if (repeat++ >= repeats)
                         {
                             DisplayActions(model, series);
+                        } else
+                        {
+                            SaveModel(model, series);
                         }
                     }
                 }
@@ -207,6 +210,44 @@ namespace ML
             }
         }
 
+        static void SaveModel(NetworkModel model, OxyPlot.Series.LineSeries series = null)
+        {
+            Console.WriteLine("\nSaving model...");
+            if (series != null)
+            {
+                try
+                {
+                    var graphPoints = new List<Vector<double>>();
+
+                    foreach (var point in series.Points)
+                    {
+                        graphPoints.Add(Vector<double>.Build.Dense(new double[] { point.Y }));
+                    }
+
+                    DelimitedWriter.Write(model.Path("graph"), Matrix<double>.Build.DenseOfRowVectors(graphPoints));
+
+                    Console.WriteLine("Saved graph data");
+                }
+                catch
+                {
+                    Console.WriteLine("Unable to save graph data");
+                }
+            }
+            model.Save();
+            Console.WriteLine("Model has been saved.");
+        }
+
+        static void DeleteModel(NetworkModel model)
+        {
+            Console.WriteLine("Deleting model...");
+            if (File.Exists(model.Path("graph")))
+            {
+                File.Delete(model.Path("graph"));
+            }
+            model.Delete();
+            Console.WriteLine("Model has been deleted.");
+        }
+
         static void DisplayActions(NetworkModel model, OxyPlot.Series.LineSeries series = null)
         {
             Console.WriteLine("\n\nActions:");
@@ -222,41 +263,13 @@ namespace ML
                     }
                 case ConsoleKey.S:
                     {
-                        Console.WriteLine("Saving model...");
-                        if (series != null)
-                        {
-                            try
-                            {
-                                var graphPoints = new List<Vector<double>>();
-
-                                foreach (var point in series.Points)
-                                {
-                                    graphPoints.Add(Vector<double>.Build.Dense(new double[] { point.Y }));
-                                }
-
-                                DelimitedWriter.Write(model.Path("graph"), Matrix<double>.Build.DenseOfRowVectors(graphPoints));
-
-                                Console.WriteLine("Saved graph data");
-                            }
-                            catch
-                            {
-                                Console.WriteLine("Unable to save graph data");
-                            }
-                        }
-                        model.Save();
-                        Console.WriteLine("Model has been saved.");
+                        SaveModel(model, series);
                         Environment.Exit(0);
                         break;
                     }
                 case ConsoleKey.D:
                     {
-                        Console.WriteLine("Deleting model...");
-                        if (File.Exists(model.Path("graph")))
-                        {
-                            File.Delete(model.Path("graph"));
-                        }
-                        model.Delete();
-                        Console.WriteLine("Model has been deleted.");
+                        DeleteModel(model);
                         Environment.Exit(0);
                         break;
                     }
