@@ -88,7 +88,7 @@ namespace ML
                 plotModel.Axes.Add(new OxyPlot.Axes.LinearAxis
                 {
                     Position = OxyPlot.Axes.AxisPosition.Left,
-                    Title = "Error",
+                    Title = "Cost",
                 });
 
                 var epochOffset = series.Points.Count;
@@ -115,17 +115,17 @@ namespace ML
 
                     stopwatch.Start();
 
-                    var error = model.RunEpoch();
+                    var cost = model.RunEpoch();
 
                     stopwatch.Stop();
 
                     Console.Write(" {0:f2} + {1:f2}s,", stopwatch.Elapsed.TotalSeconds, epochStopwatch.Elapsed.TotalSeconds);
 
-                    Console.Write(" error {0}", error);
+                    Console.Write(" cost {0}", cost);
 
-                    series.Points.Add(new DataPoint(epoch, error));
+                    series.Points.Add(new DataPoint(epoch, cost));
 
-                    if (model.Config.Threshold != null && Math.Abs(error) <= model.Config.Threshold)
+                    if (model.Config.Threshold != null && Math.Abs(cost) <= model.Config.Threshold)
                     {
                         Console.WriteLine("\nError threshold ({0}) reached. Finished learning.", model.Config.Threshold);
                         forceStop = true;
