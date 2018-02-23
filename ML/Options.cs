@@ -16,6 +16,9 @@ namespace ML
         [Option("runs", Default = 0, HelpText = "Number of epochs to run. (0 - unlimited)")]
         public int EpochRuns { get; set; }
 
+        [Option("repeat", Default = 1, HelpText = "Number of run repeats.")]
+        public int Repeats { get; set; }
+
         [Option('i', "input", Default = "input.png", HelpText = "Input data file.")]
         public string Input { get; set; }
     }

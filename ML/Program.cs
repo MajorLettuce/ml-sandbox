@@ -27,6 +27,7 @@ namespace ML
             NetworkModel model = null;
             bool teaching = false;
             int epochRuns = 1;
+            int repeats = 1;
             string inputFile = null;
 
             CommandLine.Parser.Default.ParseArguments<Options>(args)
@@ -34,6 +35,7 @@ namespace ML
                 {
                     teaching = opts.Teaching;
                     epochRuns = opts.EpochRuns;
+                    repeats = opts.Repeats;
                     Debug = opts.Debug;
 
 #if !DEBUG
@@ -105,6 +107,8 @@ namespace ML
 
                 stopwatch.Restart();
 
+                var repeat = 1;
+
                 while (epochRuns == 0 || epoch < epochRuns + epochOffset)
                 {
                     Console.Write("\nepoch {0} / {1}...", ++epoch, epochOffset + epochRuns);
@@ -137,8 +141,10 @@ namespace ML
                         epochRuns += epochRunStep;
                         var pngExporter = new PngExporter();
                         pngExporter.ExportToFile(plotModel, model.Path("learning-graph.png"));
-
-                        DisplayActions(model, series);
+                        if (repeat++ >= repeats)
+                        {
+                            DisplayActions(model, series);
+                        }
                     }
                 }
             }
