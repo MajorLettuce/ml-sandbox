@@ -322,7 +322,7 @@ namespace ML.Model
             for (int i = 0; i < permutation.Length; i++)
             {
                 var index = permutation[i];
-                /*
+
                 tasks[i] = Task.Factory.StartNew((object trainState) =>
                 {
                     var state = trainState as TrainState;
@@ -353,7 +353,7 @@ namespace ML.Model
                 }, TaskCreationOptions.LongRunning);
 
                 //tasks[i].Wait(1);
-                */
+                /*
                 Train(
                     data.Row(index),
                     LabelTransformer.TransformLabels().Row(index),
@@ -371,10 +371,10 @@ namespace ML.Model
                     }
                     accumulatedGradient[g] += gradient[g];
                 }
-
+                */
             }
 
-            // Task.WaitAll(tasks, Timeout.Infinite, CancellationToken.None);
+            Task.WaitAll(tasks, Timeout.Infinite, CancellationToken.None);
 
             // Go through each layer of the network in opposite direction.
             for (int i = layers.Count - 1; i >= 0; i--)
@@ -399,8 +399,6 @@ namespace ML.Model
             }
 
             return accumulatedCost / permutation.Length;
-
-            return Math.Sqrt(accumulatedCost / permutation.Length);
         }
     }
 }
