@@ -8,6 +8,7 @@ using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.Data.Text;
 using OxyPlot;
 using OxyPlot.WindowsForms;
+using System.Globalization;
 
 using ML.Network;
 
@@ -19,6 +20,10 @@ namespace ML
 
         static void Main(string[] args)
         {
+            CultureInfo customCulture = (CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
+            customCulture.NumberFormat.NumberDecimalSeparator = ".";
+            System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
+
             /*
             Tinker();
             Console.ReadLine();
