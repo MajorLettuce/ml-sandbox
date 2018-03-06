@@ -94,7 +94,7 @@ namespace ML.Network
 
             CachedInputs = inputs.Clone();
 
-            double net = inputs * Weights + Bias;
+            double net = inputs.PointwiseMultiply(Weights).Sum() + Bias;
 
             // Matrix [number of inputs] x [3 (bias, weights, input vectors)]
             localGradient = Matrix<double>.Build.Dense(InputCount, 3, (row, column) =>
