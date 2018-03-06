@@ -30,6 +30,7 @@ namespace ML.Model
             Vector,
             Single,
             Mnist,
+            Top,
         }
 
         [JsonProperty]
