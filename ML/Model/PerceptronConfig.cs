@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.ComponentModel;
 using Newtonsoft.Json.Converters;
 
 namespace ML.Model
@@ -15,5 +16,13 @@ namespace ML.Model
         [JsonProperty]
         [JsonConverter(typeof(StringEnumConverter))]
         public ActivationFunction Function { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue("state.csv")]
+        public string State { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
+        [DefaultValue("samples.csv")]
+        public string Samples { get; set; }
     }
 }

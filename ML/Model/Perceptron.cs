@@ -13,10 +13,6 @@ namespace ML.Model
 
         new PerceptronConfig Config;
 
-        string stateFile;
-
-        string sampleFile;
-
         /// <summary>
         /// Perceptron model constructor.
         /// </summary>
@@ -26,9 +22,7 @@ namespace ML.Model
         {
             Config = config;
 
-            stateFile = "state.csv";
-
-            sampleFile = "samples.csv";
+            Initialize();
         }
 
         /// <summary>
@@ -47,7 +41,7 @@ namespace ML.Model
         {
             try
             {
-                var state = DelimitedReader.Read<double>(Path(stateFile)).Row(0);
+                var state = DelimitedReader.Read<double>(Path(Config.State)).Row(0);
                 var bias = state[0];
                 var weights = state.SubVector(1, state.Count - 1);
                 perceptron = new Neuron(Config.Inputs, weights, bias, Config.Function.ToString());
@@ -75,7 +69,7 @@ namespace ML.Model
                 }
             });
 
-            DelimitedWriter.Write<double>(Path(stateFile), state.ToRowMatrix());
+            DelimitedWriter.Write<double>(Path(Config.State), state.ToRowMatrix());
         }
 
         /// <summary>
@@ -83,7 +77,7 @@ namespace ML.Model
         /// </summary>
         override public void Delete()
         {
-            var file = Path(stateFile);
+            var file = Path(Config.State);
 
             if (File.Exists(file))
             {
@@ -148,7 +142,7 @@ namespace ML.Model
         override public double RunEpoch()
         {
             double error = 0;
-            var samples = DelimitedReader.Read<double>(Path(sampleFile));
+            var samples = DelimitedReader.Read<double>(Path(Config.Samples));
             var permutation = Combinatorics.GeneratePermutation(samples.RowCount);
 
             foreach (var index in permutation)
