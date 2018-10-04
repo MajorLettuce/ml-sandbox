@@ -1,0 +1,21 @@
+{
+  "type": "network",
+  "inputs": 2,
+  "learningRate": 0.5,
+  "batch": "full",
+  "transformers": {
+	"label": "single",
+  },
+  "layers": [
+    {
+      "type": "fc",
+      "neurons": 10,
+      "function": "sigmoid"
+    },
+    {
+      "type": "fc",
+      "neurons": 2,
+      "function": "sigmoid"
+    }
+  ]
+}
