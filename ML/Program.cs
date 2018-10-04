@@ -1,16 +1,15 @@
-﻿using System;
-using System.IO;
-using System.Diagnostics;
-using System.Collections.Generic;
-using CommandLine;
-using ML.Model;
-using MathNet.Numerics.LinearAlgebra;
+﻿using CommandLine;
 using MathNet.Numerics.Data.Text;
+using MathNet.Numerics.LinearAlgebra;
+using ML.Model;
+using ML.Network;
 using OxyPlot;
 using OxyPlot.WindowsForms;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
-
-using ML.Network;
+using System.IO;
 
 namespace ML
 {
@@ -47,8 +46,8 @@ namespace ML
                     try
                     {
 #endif
-                        model = NetworkModel.Load(opts.Model);
-                        inputFile = model.Path(opts.Input);
+                    model = NetworkModel.Load(opts.Model);
+                    inputFile = model.Path(opts.Input);
 #if !DEBUG
 
                         Console.Clear();
@@ -60,6 +59,11 @@ namespace ML
                     }
 #endif
                 });
+
+            if (model is null)
+            {
+                Environment.Exit(0);
+            }
 
             if (teaching)
             {
@@ -149,7 +153,8 @@ namespace ML
                         if (repeat++ >= repeats)
                         {
                             DisplayActions(model, series);
-                        } else
+                        }
+                        else
                         {
                             SaveModel(model, series);
                         }
