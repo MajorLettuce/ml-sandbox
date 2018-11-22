@@ -1,3 +1,5 @@
 # Machine Learning
 
-Small framework to study machine learning alrogithms and architectures by implementing them from scratch.
+A small framework I built to study machine learning through implementing them from scratch.
+
+Includes basic perceptron and multilayer neural network with logistic activation functions.
