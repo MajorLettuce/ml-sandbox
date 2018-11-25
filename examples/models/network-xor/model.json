@@ -1,7 +1,7 @@
 {
   "type": "network",
   "inputs": 2,
-  "learningRate": 0.1,
+  "learningRate": 0.5,
   "batch": "full",
   "batchSize": 5,
   "layers": [
