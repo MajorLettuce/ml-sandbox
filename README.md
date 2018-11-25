@@ -4,10 +4,13 @@ A small framework I built to study machine learning through implementing them fr
 
 Includes basic perceptron and multilayer neural network with logistic activation functions.
 
-# Start parameters
+# About the program
+
+Program features two modes: model teaching and model execution loop.
+
+They can be started and configured using these commandline parameters:
 
 ```
->ml --help
   -d, --debug    (Default: false) Enable debug mode.
   -t, --teach    (Default: false) Run model in teaching mode.
   -m, --model    (Default: default) Name of the model to load.
@@ -16,6 +19,37 @@ Includes basic perceptron and multilayer neural network with logistic activation
   -i, --input    (Default: input.png) Input data file.
   --help         Display this help screen.
   --version      Display version information.
+```
+
+# Models
+
+Model is stored in a `models/*` directory. It contains `model.json` file, which describes the model: how many inputs it has, how many layers and their configuration, learning rate, data transformers, etc.
+
+![](showcase/model-structure.png)
+
+```json
+# model.json
+{
+  "type": "network",
+  "inputs": 2,
+  "learningRate": 0.5,
+  "batch": "full",
+  "transformers": {
+	"label": "single",
+  },
+  "layers": [
+    {
+      "type": "fc",
+      "neurons": 10,
+      "function": "sigmoid"
+    },
+    {
+      "type": "fc",
+      "neurons": 2,
+      "function": "sigmoid"
+    }
+  ]
+}
 ```
 
 # Showcase
