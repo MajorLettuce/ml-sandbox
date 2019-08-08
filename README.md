@@ -1,4 +1,4 @@
-# Machine Learning
+# Machine Learning Sandbox
 
 A small framework I built to study machine learning through implementing them from scratch.
 
