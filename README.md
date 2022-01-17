@@ -1,6 +1,6 @@
 # Machine Learning Sandbox
 
-A small framework I built to study machine learning through the implemention of them from scratch.
+A small framework I built to study machine learning through the implemention of the algorithms from scratch.
 
 Includes basic perceptron and multilayer neural network with logistic activation functions.
 
@@ -8,7 +8,7 @@ Includes basic perceptron and multilayer neural network with logistic activation
 
 Program features two modes: model teaching and model execution loop.
 
-They can be started and configured using these commandline parameters:
+They can be started and configured using these command line parameters:
 
 ```
   -d, --debug    (Default: false) Enable debug mode.
